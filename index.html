@@ -26,6 +26,8 @@
       --accent: #22d3ee;
       --online: #22c55e;
       --offline: #64748b;
+      --gold: #fbbf24;
+      --gold-2: #f59e0b;
       --text: #f8fafc;
       --muted: #94a3b8;
       --danger: #ef4444;
@@ -85,6 +87,178 @@
       100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes goldGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.65)); }
+      50% { filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.95)); }
+    }
+
+    .golden-tick-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      animation: goldGlow 2.4s ease-in-out infinite;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .profile-card.is-golden-card {
+      border-color: rgba(251, 191, 36, 0.45);
+      box-shadow: 0 6px 22px rgba(251, 191, 36, 0.08);
+    }
+    .profile-card.is-golden-card .avatar-img {
+      border-color: var(--gold);
+    }
+    .pin-avatar-ring.golden {
+      background: linear-gradient(135deg, #fde047, #f59e0b, #fbbf24) !important;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.65);
+    }
+    .pin-gold-dot {
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 1.5px solid var(--gold);
+      color: var(--gold);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+    }
+
+    .device-lock-banner {
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.42);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #fde68a;
+      line-height: 1.48;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+    }
+    .auth-tab.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Live Golden Verification Modal Styles */
+    .gv-status-hero {
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      text-align: center;
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(245, 158, 11, 0.06));
+    }
+    .gv-status-hero.verified {
+      border-color: rgba(251, 191, 36, 0.7);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(236, 72, 153, 0.12));
+    }
+    .gv-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(34, 197, 94, 0.16);
+      color: #4ade80;
+      margin-bottom: 6px;
+    }
+    .gv-live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
+      animation: pulseRec 1.2s infinite;
+    }
+    .gv-card {
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 11px 12px;
+      margin-bottom: 10px;
+    }
+    .gv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      margin-bottom: 6px;
+    }
+    .gv-progress-track {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .gv-progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #22d3ee, #6366f1);
+      transition: width 0.35s ease;
+    }
+    .gv-progress-fill.gold {
+      background: linear-gradient(90deg, #f59e0b, #fde047, #fbbf24);
+    }
+    .gv-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .gv-stat-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 6px;
+      text-align: center;
+    }
+    .gv-stat-val { font-size: 15px; font-weight: 800; color: #fff; }
+    .gv-stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+    .gv-day-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .gv-day-dot {
+      height: 22px;
+      border-radius: 6px;
+      font-size: 9.5px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .gv-day-dot.done {
+      background: rgba(251, 191, 36, 0.24);
+      border-color: var(--gold);
+      color: #fde047;
+    }
+    .gv-day-dot.today {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .gv-day-dot.missed {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .mf-ref-live-box {
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.38);
+      border-radius: 15px;
+      padding: 12px 13px;
+      margin-bottom: 13px;
+      font-size: 12px;
+      color: #e2e8f0;
+    }
 
     .lazy-img {
       opacity: 0;
@@ -811,6 +985,11 @@
       </div>
       <p class="auth-sub">Discover people on the live map, plan hangouts & chat instantly.</p>
 
+      <div id="deviceLockBanner" class="device-lock-banner hidden">
+        <i class="fa-solid fa-lock" style="color:#fbbf24;margin-top:2px;font-size:14px;"></i>
+        <div id="deviceLockBannerText">এই ডিভাইসটি ইতিমধ্যে একটি অ্যাকাউন্টের সাথে লক করা আছে।</div>
+      </div>
+
       <div class="auth-tabs">
         <button class="auth-tab active" id="tabLoginBtn" type="button">Log In</button>
         <button class="auth-tab" id="tabSignupBtn" type="button">Sign Up</button>
@@ -883,6 +1062,7 @@
           <div class="filter-row" id="planFilterRow" style="flex:1;margin-bottom:0;">
             <button class="chip active" data-filter="all">All</button>
             <button class="chip" data-filter="online">🟢 Online</button>
+            <button class="chip" data-filter="golden">🏅 Verified</button>
             <button class="chip" data-filter="Travel & Ride">🏍️ Travel</button>
             <button class="chip" data-filter="Food & Cafe">🍔 Food</button>
             <button class="chip" data-filter="Hangout">☕ Hangout</button>
@@ -968,7 +1148,7 @@
 
             <div class="social-name">
               <span id="profDisplayName">Friend</span>
-              <i class="fa-solid fa-circle-check" style="color:var(--accent);font-size:15px;"></i>
+              <i id="profGoldenTickBadge" class="fa-solid fa-circle-check golden-tick-icon hidden" style="font-size:17px;" title="Golden Verified"></i>
             </div>
             <div class="social-place" id="profDisplayPlace">📍 Location not pinned yet</div>
             <div class="social-bio" id="profDisplayBio">Looking to make new friends ✨</div>
@@ -1185,7 +1365,10 @@
         <span id="chatPeerOnlineDot" class="status-dot" style="bottom:0;right:0;"></span>
       </div>
       <div style="flex:1;min-width:0;cursor:pointer;" id="chatHeaderInfoTap">
-        <div id="chatPeerName" style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Friend</div>
+        <div style="display:flex;align-items:center;gap:5px;min-width:0;">
+          <span id="chatPeerName" style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Friend</span>
+          <i id="chatPeerGoldenBadge" class="fa-solid fa-circle-check golden-tick-icon hidden" style="font-size:13px;" title="Golden Verified"></i>
+        </div>
         <div id="chatPeerStatus" class="chat-peer-status">Offline</div>
       </div>
       <button class="icon-btn" id="chatPeerProfileBtn" type="button" title="View Profile">
@@ -1337,6 +1520,9 @@
         <button class="icon-btn" id="closeComplianceBtn" type="button"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
+      <button type="button" class="menu-item" id="openGoldenVerificationBtn">
+        <i class="fa-solid fa-award" style="color:#fbbf24;"></i> <span style="flex:1;">Live Golden Verification</span><span id="menuGoldenStatus" style="font-size:11px;color:#fbbf24;">Checking…</span>
+      </button>
       <button type="button" class="menu-item" id="openPrivacyPolicyBtn">
         <i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i> Privacy Policy
       </button>
@@ -1352,6 +1538,20 @@
       <button type="button" class="menu-item danger" id="openDeleteAccountBtn">
         <i class="fa-solid fa-user-xmark"></i> Delete Account Permanently
       </button>
+    </div>
+  </div>
+
+  <!-- Live Golden Verification dialog -->
+  <div id="goldenVerificationModal" class="modal-backdrop center hidden">
+    <div class="dialog-card" style="max-width:440px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="font-size:17.5px;color:#fbbf24;display:flex;align-items:center;gap:7px;">
+          <i class="fa-solid fa-award"></i> Live Golden Verification
+        </h3>
+        <button type="button" class="icon-btn" id="closeGoldenVerificationXBtn" style="width:32px;height:32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="goldenVerificationContent" style="font-size:13px;color:var(--muted);line-height:1.6;">লোড হচ্ছে…</div>
+      <button type="button" class="btn-primary" id="closeGoldenVerificationBtn" style="margin-top:12px;">Close</button>
     </div>
   </div>
 
@@ -1392,12 +1592,14 @@
       onDisconnect,
       serverTimestamp,
       query,
-      limitToLast
+      limitToLast,
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     // ==================== CONFIG ====================
     const APP_NAME = "Make Friend";
-    const SUPPORT_EMAIL = "support.makefriend@gmail.com";
+    const SUPPORT_EMAIL = "starmusic000558@gmail.com";
+    const OTHER_CONTACT_EMAIL = "sudiptak503@gmail.com";
     const PUSH_RELAY_URL = "https://script.google.com/macros/s/AKfycbySrB1gV_g7YdqLm89c_ZA203dnsLxBPGtK22Hq2ber8GLn7WMDOMcIrq3EXSM3QBfUDQ/exec";
 
     const firebaseConfig = {
@@ -1562,6 +1764,23 @@
 
     function defaultAvatar(seed = "user") {
       return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+    }
+
+    function isGoldenVerified(u) {
+      return Boolean(u && u.goldenVerification && u.goldenVerification.verified === true);
+    }
+
+    function goldenBadgeHtml(u, size = 14) {
+      return isGoldenVerified(u)
+        ? ` <i class="fa-solid fa-circle-check golden-tick-icon" style="font-size:${size}px;" title="Golden Verified"></i>`
+        : "";
+    }
+
+    function maskEmail(email = "") {
+      if (!email || !email.includes("@")) return "Registered Account";
+      const [local, domain] = email.split("@");
+      const visible = local.slice(0, Math.min(2, local.length));
+      return `${visible}***@${domain}`;
     }
 
     function formatDetailedLastSeen(ts) {
@@ -1773,9 +1992,251 @@
       if (soundEnabled) SoundFX.sent();
     });
 
+    // ==================== ONE DEVICE = ONE ACCOUNT LOCK ENGINE ====================
+    window.__mfDeviceLockState = {
+      installId: null,
+      lockedUid: null,
+      lockedEmail: "",
+      allowedUid: null,
+      checked: false
+    };
+
+    function readCookie(name) {
+      try {
+        const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+        return m ? decodeURIComponent(m[1]) : "";
+      } catch { return ""; }
+    }
+
+    function writeCookie(name, val) {
+      try {
+        document.cookie = `${name}=${encodeURIComponent(val)}; max-age=315360000; path=/; SameSite=Lax`;
+      } catch {}
+    }
+
+    function idbRead(key) {
+      return new Promise((resolve) => {
+        try {
+          const req = indexedDB.open("mf_device_lock_db", 1);
+          req.onupgradeneeded = () => {
+            if (!req.result.objectStoreNames.contains("kv")) req.result.createObjectStore("kv");
+          };
+          req.onsuccess = () => {
+            try {
+              const tx = req.result.transaction("kv", "readonly");
+              const g = tx.objectStore("kv").get(key);
+              g.onsuccess = () => resolve(g.result || "");
+              g.onerror = () => resolve("");
+            } catch { resolve(""); }
+          };
+          req.onerror = () => resolve("");
+        } catch { resolve(""); }
+      });
+    }
+
+    function idbWrite(key, val) {
+      return new Promise((resolve) => {
+        try {
+          const req = indexedDB.open("mf_device_lock_db", 1);
+          req.onupgradeneeded = () => {
+            if (!req.result.objectStoreNames.contains("kv")) req.result.createObjectStore("kv");
+          };
+          req.onsuccess = () => {
+            try {
+              const tx = req.result.transaction("kv", "readwrite");
+              tx.objectStore("kv").put(val, key);
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            } catch { resolve(false); }
+          };
+          req.onerror = () => resolve(false);
+        } catch { resolve(false); }
+      });
+    }
+
+    async function getMFInstallId() {
+      if (window.__mfDeviceLockState.installId) return window.__mfDeviceLockState.installId;
+
+      // Priority 1: Native Android Device ID via Sketchware Pro Bridge
+      if (window.AndroidBridge && typeof window.AndroidBridge.getDeviceId === "function") {
+        try {
+          const nativeId = String(window.AndroidBridge.getDeviceId() || "").trim();
+          if (nativeId) {
+            const clean = "and_" + nativeId.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 96);
+            window.__mfDeviceLockState.installId = clean;
+            try { localStorage.setItem("mf_installation_id", clean); } catch {}
+            writeCookie("mf_inst_id", clean);
+            idbWrite("install_id", clean);
+            return clean;
+          }
+        } catch {}
+      }
+
+      // Priority 2: Recover from any surviving storage layer (localStorage / IndexedDB / Cookie)
+      let id = "";
+      try { id = localStorage.getItem("mf_installation_id") || ""; } catch {}
+      if (!id) id = await idbRead("install_id");
+      if (!id) id = readCookie("mf_inst_id");
+
+      if (!id) {
+        id = (crypto.randomUUID ? crypto.randomUUID() : ("mf-" + Date.now() + "-" + Math.random().toString(36).slice(2, 12)));
+      }
+      id = id.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 100);
+
+      // Sync across all 3 layers
+      try { localStorage.setItem("mf_installation_id", id); } catch {}
+      writeCookie("mf_inst_id", id);
+      await idbWrite("install_id", id);
+      window.__mfDeviceLockState.installId = id;
+      return id;
+    }
+
+    async function saveLocalDeviceLock(uid, email = "") {
+      window.__mfDeviceLockState.lockedUid = uid;
+      if (email) window.__mfDeviceLockState.lockedEmail = email;
+      try {
+        localStorage.setItem("mf_locked_uid", uid);
+        if (email) localStorage.setItem("mf_locked_email", email);
+      } catch {}
+      writeCookie("mf_locked_uid", uid);
+      if (email) writeCookie("mf_locked_email", email);
+      await idbWrite("locked_uid", uid);
+      if (email) await idbWrite("locked_email", email);
+      updateAuthLockUI();
+    }
+
+    async function loadLocalDeviceLock() {
+      let uid = "";
+      let email = "";
+      try {
+        uid = localStorage.getItem("mf_locked_uid") || "";
+        email = localStorage.getItem("mf_locked_email") || "";
+      } catch {}
+      if (!uid) uid = await idbRead("locked_uid");
+      if (!uid) uid = readCookie("mf_locked_uid");
+      if (!email) email = await idbRead("locked_email");
+      if (!email) email = readCookie("mf_locked_email");
+      if (uid) {
+        window.__mfDeviceLockState.lockedUid = uid;
+        window.__mfDeviceLockState.lockedEmail = email;
+      }
+      return { uid, email };
+    }
+
+    function updateAuthLockUI() {
+      const { lockedUid, lockedEmail } = window.__mfDeviceLockState;
+      const banner = $("deviceLockBanner");
+      const bannerText = $("deviceLockBannerText");
+      const signupTab = $("tabSignupBtn");
+
+      if (lockedUid) {
+        if (banner) banner.classList.remove("hidden");
+        if (bannerText) {
+          const emailPart = lockedEmail ? ` (<strong>${escapeHtml(maskEmail(lockedEmail))}</strong>)` : "";
+          bannerText.innerHTML = `এই ডিভাইসটি ইতিমধ্যে একটি অ্যাকাউন্টের সাথে লক করা আছে${emailPart}। নিরাপত্তার কারণে এই ডিভাইসে নতুন সাইন আপ বা অন্য কোনো আইডি দিয়ে লগইন করা যাবে না।`;
+        }
+        if (signupTab) signupTab.classList.add("locked");
+        if (isSignupMode) {
+          isSignupMode = false;
+          $("tabLoginBtn")?.classList.add("active");
+          $("tabSignupBtn")?.classList.remove("active");
+          $("signupNameGroup")?.classList.add("hidden");
+          if ($("authSubmitBtn")) $("authSubmitBtn").textContent = "Log In";
+        }
+      } else {
+        if (banner) banner.classList.add("hidden");
+        if (signupTab) signupTab.classList.remove("locked");
+      }
+    }
+
+    async function refreshDeviceLockStatus() {
+      const installId = await getMFInstallId();
+      await loadLocalDeviceLock();
+      try {
+        const snap = await get(ref(db, `${DB_ROOT}/deviceLocks/${installId}`));
+        const val = snap.val();
+        if (val) {
+          const uid = typeof val === "string" ? val : (val.uid || "");
+          const email = typeof val === "object" ? (val.email || "") : "";
+          if (uid) await saveLocalDeviceLock(uid, email);
+        }
+      } catch {
+        // Fallback to local cache if RTDB rules require auth before reading
+      }
+      window.__mfDeviceLockState.checked = true;
+      updateAuthLockUI();
+      return window.__mfDeviceLockState;
+    }
+
+    async function reserveInstallForUser(user) {
+      const installId = await getMFInstallId();
+      const lockRef = ref(db, `${DB_ROOT}/deviceLocks/${installId}`);
+      const tx = await runTransaction(lockRef, (current) => {
+        if (current == null) {
+          return {
+            uid: user.uid,
+            email: user.email || "",
+            name: user.displayName || "",
+            createdAt: Date.now(),
+            platform: /Android/i.test(navigator.userAgent) ? "android" : "web"
+          };
+        }
+        if (typeof current === "string" && current === user.uid) {
+          return {
+            uid: user.uid,
+            email: user.email || "",
+            name: user.displayName || "",
+            createdAt: Date.now(),
+            platform: /Android/i.test(navigator.userAgent) ? "android" : "web"
+          };
+        }
+        if (current && current.uid === user.uid) {
+          if (!current.email && user.email) current.email = user.email;
+          return current;
+        }
+        return; // abort: another account already owns this device
+      });
+
+      const lockVal = tx.snapshot.val();
+      const ownerUid = typeof lockVal === "string" ? lockVal : (lockVal?.uid || "");
+      const ownerEmail = typeof lockVal === "object" ? (lockVal?.email || "") : "";
+
+      if (!tx.committed || ownerUid !== user.uid) {
+        if (ownerUid) await saveLocalDeviceLock(ownerUid, ownerEmail);
+        window.__mfDeviceLockState.allowedUid = null;
+        window.dispatchEvent(new CustomEvent("mf:device-verified", { detail: { uid: null } }));
+
+        // If this was a brand-new unauthorized signup (created < 20s ago & no DB profile), clean up orphan auth user
+        try {
+          const createdTs = user.metadata?.creationTime ? new Date(user.metadata.creationTime).getTime() : 0;
+          if (createdTs && (Date.now() - createdTs) < 20000) {
+            const profSnap = await get(ref(db, `${DB_ROOT}/users/${user.uid}`));
+            if (!profSnap.exists()) {
+              await deleteUser(user).catch(() => {});
+            }
+          }
+        } catch {}
+
+        await signOut(auth).catch(() => {});
+        $("appShell").classList.add("hidden");
+        $("authScreen").classList.remove("hidden");
+        updateAuthLockUI();
+        showToast("⛔ এই ডিভাইসে আগে যে আইডিটি লগইন করা হয়েছে, শুধু সেটিতেই লগইন করা যাবে। অন্য আইডি অনুমোদিত নয়!", 5500);
+        return false;
+      }
+
+      await saveLocalDeviceLock(user.uid, user.email || ownerEmail);
+      window.__mfDeviceLockState.allowedUid = user.uid;
+      window.dispatchEvent(new CustomEvent("mf:device-verified", { detail: { uid: user.uid } }));
+      return true;
+    }
+
+    // Initialize lock status immediately on boot
+    refreshDeviceLockStatus();
+
     // ==================== AUTHENTICATION ====================
     getRedirectResult(auth)
-      .then((res) => { if (res && res.user) showToast("Welcome to Make Friend! 🎉"); })
+      .then((res) => { if (res && res.user) showToast("Verifying device..."); })
       .catch((err) => { if (err && err.code) handleAuthError(err); });
 
     $("tabLoginBtn").addEventListener("click", () => {
@@ -1786,7 +2247,12 @@
       $("authSubmitBtn").textContent = "Log In";
     });
 
-    $("tabSignupBtn").addEventListener("click", () => {
+    $("tabSignupBtn").addEventListener("click", async () => {
+      const lockState = await refreshDeviceLockStatus();
+      if (lockState.lockedUid) {
+        showToast("⛔ এই ডিভাইসে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে। নতুন সাইন আপ করা যাবে না!", 4500);
+        return;
+      }
       isSignupMode = true;
       $("tabSignupBtn").classList.add("active");
       $("tabLoginBtn").classList.remove("active");
@@ -1802,21 +2268,30 @@
       const btn = $("authSubmitBtn");
 
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Please wait...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Checking device...`;
       try {
+        const lockState = await refreshDeviceLockStatus();
+
         if (isSignupMode) {
+          if (lockState.lockedUid) {
+            showToast("⛔ এই ডিভাইসে আগে থেকেই একটি আইডি লক করা আছে। নতুন অ্যাকাউন্ট খোলা যাবে না!", 5000);
+            updateAuthLockUI();
+            return;
+          }
           if (!name) {
             showToast("Please enter your full name.");
-            btn.disabled = false;
-            btn.textContent = "Create Account";
             return;
           }
           const cred = await createUserWithEmailAndPassword(auth, email, password);
           await updateProfile(cred.user, { displayName: name });
-          showToast("Account created! 🎉");
+          showToast("Verifying account...");
         } else {
+          if (lockState.lockedUid && lockState.lockedEmail && email.toLowerCase() !== lockState.lockedEmail.toLowerCase()) {
+            showToast(`⛔ এই ডিভাইসটি ${maskEmail(lockState.lockedEmail)} আইডির সাথে লক করা আছে। অন্য আইডি দিয়ে লগইন করা যাবে না!`, 5200);
+            return;
+          }
           await signInWithEmailAndPassword(auth, email, password);
-          showToast("Logged in successfully! 👋");
+          showToast("Verifying account...");
         }
       } catch (err) {
         handleAuthError(err);
@@ -1833,8 +2308,8 @@
       btn.disabled = true;
       const isMobileOrWebView = /Android|iPhone|iPad|wv/i.test(navigator.userAgent);
       try {
+        await refreshDeviceLockStatus();
         await signInWithPopup(auth, provider);
-        showToast("Signed in with Google! 🎉");
       } catch (err) {
         const redirectFallback = [
           "auth/popup-blocked",
@@ -1870,6 +2345,15 @@
     onAuthStateChanged(auth, async (user) => {
       clearInterval(presenceHeartbeat);
       if (user) {
+        let deviceAllowed = false;
+        try { deviceAllowed = await reserveInstallForUser(user); }
+        catch (lockErr) {
+          console.error("Device lock check failed:", lockErr);
+          await signOut(auth);
+          showToast("ডিভাইস যাচাই করা যায়নি। ইন্টারনেট সংযোগ দিয়ে আবার চেষ্টা করুন।", 4500);
+          return;
+        }
+        if (!deviceAllowed) return;
         currentUser = user;
         usersLoaded = false;
         usersLoadError = null;
@@ -1904,6 +2388,8 @@
           }
         }
       } else {
+        window.__mfDeviceLockState.allowedUid = null;
+        window.dispatchEvent(new CustomEvent("mf:device-verified", { detail: { uid: null } }));
         if (window.AndroidBridge && typeof window.AndroidBridge.logoutUser === "function") {
           try { window.AndroidBridge.logoutUser(); } catch {}
         }
@@ -1999,6 +2485,12 @@
         if (currentUser && allUsers[currentUser.uid]) {
           myProfile = allUsers[currentUser.uid];
           renderSocialProfileView();
+          const golden = myProfile.goldenVerification || {};
+          const goldenLabel = $("menuGoldenStatus");
+          if (goldenLabel) {
+            const cDays = Number(golden.cycleDaysCount ?? golden.monthDays ?? 0);
+            goldenLabel.textContent = golden.verified ? "GOLDEN ✓" : `${Math.min(cDays, 20)}/20 দিন`;
+          }
         }
         updateOnlineCounters();
         renderHomeFeed();
@@ -2068,6 +2560,8 @@
 
       if (activeFilter === "online") {
         usersList = usersList.filter((u) => u.online === true);
+      } else if (activeFilter === "golden") {
+        usersList = usersList.filter((u) => isGoldenVerified(u));
       } else if (activeFilter !== "all") {
         usersList = usersList.filter((u) => u.planTag === activeFilter);
       }
@@ -2109,8 +2603,9 @@
       const pills = getPublicStatPills(u);
       const locInfo = u.placeName ? `📍 ${escapeHtml(u.placeName)}` : (dist ? `📍 ${dist}` : "");
 
+      const isGolden = isGoldenVerified(u);
       return `
-        <article class="profile-card ${u.online ? "is-online" : ""}" style="animation-delay:${Math.min(idx * 45, 250)}ms;">
+        <article class="profile-card ${u.online ? "is-online" : ""} ${isGolden ? "is-golden-card" : ""}" style="animation-delay:${Math.min(idx * 45, 250)}ms;">
           <div class="card-top" onclick="window.openUserProfile('${escapeHtml(u.uid)}')">
             <div class="avatar-wrap">
               <img class="avatar-img lazy-img" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='${defaultAvatar(u.uid)}';this.classList.add('loaded');" src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" alt="${escapeHtml(u.name || "Friend")}" />
@@ -2119,8 +2614,8 @@
             </div>
             <div class="user-meta">
               <div class="user-name-row">
-                <span class="user-name">${escapeHtml(u.name || "Friend")}${isMe ? " (You)" : ""}</span>
-                <span class="online-tag ${u.online ? "on" : "off"}">${u.online ? "Online" : formatShortTime(u.lastSeen)}</span>
+                <span class="user-name">${escapeHtml(u.name || "Friend")}${isMe ? " (You)" : ""}</span>${goldenBadgeHtml(u, 14)}
+                <span class="online-tag ${u.online ? "on" : "off"}" style="margin-left:auto;">${u.online ? "Online" : formatShortTime(u.lastSeen)}</span>
               </div>
               <div class="user-bio">${escapeHtml(u.bio || "Looking for new friends")}${locInfo ? ` • ${locInfo}` : ""}</div>
             </div>
@@ -2271,13 +2766,15 @@
 
       Object.values(allUsers).forEach((u) => {
         if (u.ghostMode || u.lat == null || u.lng == null) return;
+        const isGolden = isGoldenVerified(u);
         const iconHtml = `
           <div class="custom-user-pin">
-            <div class="pin-avatar-ring ${u.online ? "online" : ""}">
+            <div class="pin-avatar-ring ${u.online ? "online" : ""} ${isGolden ? "golden" : ""}">
               <img src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" onerror="this.src='${defaultAvatar(u.uid)}'" alt="" />
               <span class="pin-mood">${escapeHtml(u.moodEmoji || "😎")}</span>
+              ${isGolden ? `<span class="pin-gold-dot"><i class="fa-solid fa-check"></i></span>` : ""}
             </div>
-            <div class="pin-label">${escapeHtml(u.name || "Friend")}</div>
+            <div class="pin-label">${escapeHtml(u.name || "Friend")}${isGolden ? " 🏅" : ""}</div>
           </div>`;
         const customIcon = L.divIcon({ html: iconHtml, className: "", iconSize: [70, 72], iconAnchor: [35, 36] });
 
@@ -2355,7 +2852,8 @@
             <img src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" style="width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid ${u.online ? "var(--online)" : "var(--offline)"};" />
             <span style="position:absolute;bottom:0;right:-4px;background:var(--surface-2);border:1px solid var(--border);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:17px;">${escapeHtml(u.moodEmoji || "😎")}</span>
           </div>
-          <h2 style="font-size:19px;margin-top:9px;">${escapeHtml(u.name || "Friend")}</h2>
+          <h2 style="font-size:19px;margin-top:9px;display:inline-flex;align-items:center;gap:6px;">${escapeHtml(u.name || "Friend")}${goldenBadgeHtml(u, 17)}</h2>
+          ${isGoldenVerified(u) ? `<div style="margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(251,191,36,0.16);border:1px solid rgba(251,191,36,0.45);color:#fde047;">🏅 Golden Verified Member</span></div>` : ""}
           <p style="font-size:12.5px;color:${u.online ? "#4ade80" : "var(--muted)"};margin-top:2px;">
             ${u.online ? "● Online Now" : formatDetailedLastSeen(u.lastSeen)}${u.placeName ? ` • 📍 ${escapeHtml(u.placeName)}` : (dist ? ` • 📍 ${dist} away` : "")}
           </p>
@@ -2479,7 +2977,7 @@
               </div>
               <div class="chat-row-info">
                 <div class="chat-row-top">
-                  <strong style="font-size:14.5px;">${escapeHtml(name)}</strong>
+                  <strong style="font-size:14.5px;display:inline-flex;align-items:center;gap:5px;">${escapeHtml(name)}${goldenBadgeHtml(peer, 13)}</strong>
                   <span class="chat-row-time">${formatShortTime(c.timestamp)}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;">
@@ -2497,6 +2995,7 @@
     function updateChatPeerHeader(peer, isTyping = false) {
       $("chatPeerAvatar").src = peer.photoURL || defaultAvatar(peer.uid);
       $("chatPeerName").textContent = peer.name || "Friend";
+      $("chatPeerGoldenBadge")?.classList.toggle("hidden", !isGoldenVerified(peer));
       $("chatPeerOnlineDot").style.background = peer.online ? "var(--online)" : "var(--offline)";
       const st = $("chatPeerStatus");
       st.className = "chat-peer-status";
@@ -2989,6 +3488,7 @@
       $("profAvatarPreview").src = u.photoURL || defaultAvatar(u.uid);
       $("profMoodFloat").textContent = u.moodEmoji || "😎";
       $("profDisplayName").textContent = u.name || "Friend";
+      $("profGoldenTickBadge")?.classList.toggle("hidden", !isGoldenVerified(u));
       $("profDisplayBio").textContent = u.bio || "Looking to make new friends ✨";
       $("profDisplayPlace").textContent = u.placeName ? `📍 ${u.placeName}` : "📍 Tap Map to pin your city";
 
@@ -3141,6 +3641,18 @@
     $("complianceMenuModal").addEventListener("click", (e) => {
       if (e.target === $("complianceMenuModal")) $("complianceMenuModal").classList.add("hidden");
     });
+    $("openGoldenVerificationBtn").addEventListener("click", () => {
+      $("complianceMenuModal").classList.add("hidden");
+      $("goldenVerificationModal").classList.remove("hidden");
+      if (typeof window.mfRenderLiveGoldenModal === "function") {
+        window.mfRenderLiveGoldenModal();
+      }
+    });
+    const closeGvModal = () => $("goldenVerificationModal").classList.add("hidden");
+    $("closeGoldenVerificationBtn").addEventListener("click", closeGvModal);
+    $("closeGoldenVerificationXBtn")?.addEventListener("click", closeGvModal);
+    $("goldenVerificationModal").addEventListener("click", (e) => { if (e.target === $("goldenVerificationModal")) closeGvModal(); });
+
 
     function openInfoDialog(html) {
       $("complianceMenuModal").classList.add("hidden");
@@ -3181,9 +3693,17 @@
     $("openSupportBtn").addEventListener("click", () => {
       openInfoDialog(`
         <h3 style="font-size:17px;margin-bottom:10px;">📧 Support & Help</h3>
-        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">Need help with your account, reporting a user, or data deletion? Contact us anytime:</p>
-        <div style="background:var(--surface-2);padding:12px;border-radius:12px;border:1px solid var(--border);text-align:center;font-weight:700;color:var(--accent);margin-bottom:14px;">${SUPPORT_EMAIL}</div>
-        <a href="mailto:${SUPPORT_EMAIL}?subject=Make%20Friend%20Support" rel="noopener noreferrer" class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Send Email</a>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;">Need help with your account, Golden Verification, referral payout, or reporting a user? Contact us anytime:</p>
+        <div style="background:var(--surface-2);padding:11px;border-radius:12px;border:1px solid var(--border);text-align:center;margin-bottom:8px;">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px;">Primary Support Gmail</div>
+          <div style="font-weight:700;color:var(--accent);font-size:13.5px;">${SUPPORT_EMAIL}</div>
+        </div>
+        <div style="background:var(--surface-2);padding:11px;border-radius:12px;border:1px solid var(--border);text-align:center;margin-bottom:14px;">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px;">Other Gmail</div>
+          <div style="font-weight:700;color:#e2e8f0;font-size:13px;">${OTHER_CONTACT_EMAIL}</div>
+        </div>
+        <a href="mailto:${SUPPORT_EMAIL}?subject=Make%20Friend%20Support" rel="noopener noreferrer" class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Email Support</a>
+        <a href="mailto:${OTHER_CONTACT_EMAIL}?subject=Make%20Friend%20Inquiry" rel="noopener noreferrer" class="act-btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;width:100%;">Email Other Contact</a>
         <button class="act-btn" style="width:100%;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Close</button>`);
     });
 
@@ -3774,7 +4294,7 @@
           <div class="mf-ref-badge"><i class="fa-solid fa-bolt" style="color:#fde047;"></i> Earn ₹${REFER_REWARD_RS} Per Friend</div>
           <div style="font-size:18px;font-weight:800;color:#fff;">Refer Friends & Earn Cash</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:3px;">
-            বন্ধুকে অ্যাপ শেয়ার করুন। সে আপনার কোড বসালেই সাথে সাথে ₹${REFER_REWARD_RS} পাবেন!
+            বন্ধু আপনার কোড দিয়ে যোগদান করার পর একই দিনে ৫ মিনিটের বেশি অ্যাপ ব্যবহার করলেই রেফারেল সফল হবে এবং ₹${REFER_REWARD_RS} পাবেন।
           </div>
 
           <div class="mf-wallet-grid">
@@ -3793,6 +4313,8 @@
             <span>Min Withdraw: ₹${MIN_WITHDRAW_RS}</span>
           </div>
         </div>
+
+        <div id="mfRefLiveStatusBox" class="mf-ref-live-box hidden"></div>
 
         <div class="mf-ref-card">
           <h3>
@@ -3917,7 +4439,7 @@
         document.querySelector(`.nav-btn[data-tab="${tabId}"]`)?.classList.add("active");
       }
       if (topBar) topBar.style.width = "100%";
-      if (tabId === "referView") renderReferWalletUI();
+      if (tabId === "referView") { renderReferWalletUI(); mfRenderLiveReferralStatus(); }
     }, swapDelay);
 
     navAnimTimer2 = setTimeout(() => {
@@ -4230,36 +4752,19 @@
         return;
       }
 
-      // Credit ₹5 atomically to Referrer's Wallet & All-Time Balance
-      await runTransaction(ref(db, `${DB_ROOT}/users/${referrerUid}`), (cur) => {
-        if (!cur) return cur;
-        cur.walletBalance = (Number(cur.walletBalance) || 0) + REFER_REWARD_RS;
-        cur.lifetimeReferralEarnings = (Number(cur.lifetimeReferralEarnings) || 0) + REFER_REWARD_RS;
-        cur.totalReferrals = (Number(cur.totalReferrals) || 0) + 1;
-        return cur;
-      });
-
-      // Notify Referrer
-      await push(ref(db, `${DB_ROOT}/notifications/${referrerUid}`), {
-        title: `🎁 +₹${REFER_REWARD_RS} Referral Bonus!`,
-        body: `${mfUserData.name || "A new friend"} joined with your referral code!`,
-        avatar: mfUserData.photoURL || "",
-        peerUid: mfUser.uid,
-        read: false,
-        timestamp: Date.now()
-      }).catch(() => {});
-
       // Permanently close referral prompt for this user
       markRefPromptDoneLocally(mfUser.uid);
       await update(ref(db, `${DB_ROOT}/users/${mfUser.uid}`), {
         referredBy: referrerUid,
         referredByCode: code,
         referralPromptDone: true,
-        referralClaimedAt: Date.now()
+        referralClaimedAt: Date.now(),
+        referralClaimDate: mfDateKey(),
+        referralRewarded: false
       });
 
       $("mfRefClaimModal").classList.add("hidden");
-      mfToast("🎉 Referral code applied successfully!", 3500);
+      mfToast("🎉 কোড যুক্ত হয়েছে। বন্ধু আজ অন্তত ৫ মিনিট অ্যাপ ব্যবহার করলে রেফারেল সফল হবে।", 4500);
     } catch (err) {
       console.error("Referral claim error:", err);
       errEl.textContent = "কোড ভেরিফাই করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।";
@@ -4269,48 +4774,1144 @@
     }
   });
 
-  // ==================== 6. AUTH STATE LISTENER (SPLASH + USER DATA SYNC) ====================
-  onAuthStateChanged(auth, (user) => {
+  // ==================== DAILY ACTIVITY + 30D/20D GOLDEN TICK + 5-MIN QUALIFIED REFERRALS ====================
+  const MF_DAILY_TARGET_SECONDS = 15 * 60;      // 15 minutes/day (900s) for Golden Verification
+  const MF_REFERRAL_ONLINE_SECONDS = 5 * 60;    // Must be > 5 minutes (> 300s, i.e. >= 301s) same day
+  const MF_GOLDEN_TARGET_DAYS = 20;             // 20 active days required
+  const MF_GOLDEN_CYCLE_DAYS = 30;              // Within a 30-day cycle
+  const MF_GOLDEN_MONTHLY_BONUS_RS = 100;       // ₹100/month added to Referral Wallet
+
+  let mfActivityTimer = null;
+  let mfPendingActiveSeconds = 0;
+  let mfServerTodaySeconds = 0;
+  let mfCurrentTrackedDay = "";
+  let mfActivityBusy = false;
+  let mfVisibilityHandler = null;
+  let mfPageHideHandler = null;
+  let mfLastRefCrossFlushed = false;
+  let mfLastGoldenCrossFlushed = false;
+
+  function mfDateKey(date = new Date()) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }
+
+  function mfParseDateKey(key) {
+    if (!key || typeof key !== "string") return null;
+    const parts = key.split("-").map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
+  }
+
+  function mfAddDays(dateKey, offsetDays) {
+    const d = mfParseDateKey(dateKey) || new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return mfDateKey(d);
+  }
+
+  function mfDaysBetween(startKey, endKey) {
+    const d1 = mfParseDateKey(startKey);
+    const d2 = mfParseDateKey(endKey);
+    if (!d1 || !d2) return 0;
+    return Math.round((d2.getTime() - d1.getTime()) / 86400000);
+  }
+
+  function mfFormatMMSS(totalSec) {
+    const s = Math.max(0, Math.floor(totalSec));
+    const m = Math.floor(s / 60);
+    const rem = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(rem).padStart(2, "0")}`;
+  }
+
+  function mfGetLiveTodaySeconds() {
+    if (mfCurrentTrackedDay !== mfDateKey()) return mfPendingActiveSeconds;
+    return mfServerTodaySeconds + mfPendingActiveSeconds;
+  }
+
+  // Evaluates 30-day cycle & 20-day qualification state cleanly
+  function mfEvaluateGoldenState(rawGolden, todayKey) {
+    const g = rawGolden && typeof rawGolden === "object" ? { ...rawGolden } : {};
+    let cycleStartDate = g.cycleStartDate || todayKey;
+    let cycleNumber = Number(g.cycleNumber) || 1;
+    let verified = Boolean(g.verified);
+    let qualifiedDates = (g.qualifiedDates && typeof g.qualifiedDates === "object") ? { ...g.qualifiedDates } : {};
+
+    // Keep only dates inside [cycleStartDate, cycleStartDate + 29]
+    const cleanDates = {};
+    Object.keys(qualifiedDates).forEach((k) => {
+      if (qualifiedDates[k]) {
+        const diff = mfDaysBetween(cycleStartDate, k);
+        if (diff >= 0 && diff < MF_GOLDEN_CYCLE_DAYS) cleanDates[k] = true;
+      }
+    });
+    qualifiedDates = cleanDates;
+
+    let daysElapsed = mfDaysBetween(cycleStartDate, todayKey) + 1; // Day 1 .. 30+
+    if (daysElapsed < 1) {
+      cycleStartDate = todayKey;
+      daysElapsed = 1;
+      qualifiedDates = {};
+    }
+
+    let cycleDaysCount = Object.keys(qualifiedDates).length;
+    const todayQualified = Boolean(qualifiedDates[todayKey]);
+    let mutated = !g.cycleStartDate;
+    let revokedNow = false;
+    let resetReason = g.lastResetReason || "";
+
+    // Case 1: 30-day cycle ended (daysElapsed > 30)
+    if (daysElapsed > MF_GOLDEN_CYCLE_DAYS) {
+      mutated = true;
+      if (cycleDaysCount >= MF_GOLDEN_TARGET_DAYS) {
+        // Maintained 20/30! Keep Golden Tick & advance to next 30-day cycle
+        verified = true;
+        cycleNumber += 1;
+        cycleStartDate = todayKey;
+        qualifiedDates = {};
+        cycleDaysCount = 0;
+        daysElapsed = 1;
+        resetReason = "";
+      } else {
+        // Missed required 20 days in 30-day month -> Revoke Golden Tick & restart from Day 1
+        if (verified) revokedNow = true;
+        verified = false;
+        cycleNumber = 1;
+        cycleStartDate = todayKey;
+        qualifiedDates = {};
+        cycleDaysCount = 0;
+        daysElapsed = 1;
+        resetReason = "৩০ দিনের মধ্যে ২০ দিন (প্রতিদিন ১৫ মিনিট) পূর্ণ না হওয়ায় গোল্ডেন টিক চলে গেছে এবং প্রথম থেকে কাউন্টডাউন শুরু হয়েছে।";
+      }
+    } else {
+      // Case 2: Within 30-day cycle — check if mathematically impossible to reach 20 days
+      const remainingDaysAfterToday = Math.max(0, MF_GOLDEN_CYCLE_DAYS - daysElapsed);
+      const maxPossibleDays = cycleDaysCount + remainingDaysAfterToday + (todayQualified ? 0 : 1);
+      if (maxPossibleDays < MF_GOLDEN_TARGET_DAYS) {
+        mutated = true;
+        if (verified) revokedNow = true;
+        verified = false;
+        cycleNumber = 1;
+        cycleStartDate = todayKey;
+        qualifiedDates = todayQualified ? { [todayKey]: true } : {};
+        cycleDaysCount = Object.keys(qualifiedDates).length;
+        daysElapsed = 1;
+        resetReason = "এই মাসে আর ২০ দিন পূর্ণ করা সম্ভব নয় (১+ দিন মিস হয়েছে), তাই গোল্ডেন টিক ও কাউন্টডাউন প্রথম থেকে শুরু হয়েছে।";
+      }
+    }
+
+    return {
+      mutated,
+      revokedNow,
+      next: {
+        ...g,
+        cycleStartDate,
+        cycleNumber,
+        verified,
+        qualifiedDates,
+        cycleDaysCount,
+        daysElapsed,
+        daysRemaining: Math.max(0, MF_GOLDEN_CYCLE_DAYS - daysElapsed),
+        lastResetReason: resetReason,
+        verifiedAt: verified ? (g.verifiedAt || Date.now()) : null
+      }
+    };
+  }
+
+  async function mfSyncGoldenCycleOnBoot(uid) {
+    if (!uid) return;
+    const todayKey = mfDateKey();
+    let wasRevoked = false;
+    try {
+      await runTransaction(ref(db, `${DB_ROOT}/users/${uid}`), (cur) => {
+        if (!cur) return cur;
+        const evalRes = mfEvaluateGoldenState(cur.goldenVerification, todayKey);
+        if (!evalRes.mutated && cur.goldenVerification?.cycleDaysCount === evalRes.next.cycleDaysCount) {
+          return cur;
+        }
+        wasRevoked = evalRes.revokedNow;
+        cur.goldenVerification = evalRes.next;
+        return cur;
+      });
+      if (wasRevoked) {
+        mfToast("⚠️ ৩০ দিনে ২০ দিন পূর্ণ না হওয়ায় আপনার গোল্ডেন টিক চলে গেছে এবং প্রথম থেকে কাউন্টডাউন শুরু হয়েছে।", 5500);
+        await push(ref(db, `${DB_ROOT}/notifications/${uid}`), {
+          title: "⚠️ Golden Tick Reset",
+          body: "৩০ দিনে ২০ দিন (প্রতিদিন ১৫ মিনিট) পূর্ণ না হওয়ায় গোল্ডেন টিক রিসেট হয়েছে। প্রথম থেকে আবার শুরু করুন।",
+          avatar: mfUserData?.photoURL || "",
+          peerUid: "",
+          read: false,
+          timestamp: Date.now()
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("Golden boot sync skipped:", e);
+    }
+  }
+
+  async function mfApplyQualifiedDay(uid, dayKey) {
+    const userRef = ref(db, `${DB_ROOT}/users/${uid}`);
+    let awardedBonusNow = false;
+    let newlyVerifiedNow = false;
+
+    const tx = await runTransaction(userRef, (cur) => {
+      if (!cur) return cur;
+      const evalRes = mfEvaluateGoldenState(cur.goldenVerification, dayKey);
+      const g = evalRes.next;
+      g.qualifiedDates = g.qualifiedDates || {};
+
+      if (!g.qualifiedDates[dayKey]) {
+        g.qualifiedDates[dayKey] = true;
+        g.lastQualifiedDate = dayKey;
+      }
+      g.cycleDaysCount = Object.keys(g.qualifiedDates).length;
+
+      const reachedTarget = g.cycleDaysCount >= MF_GOLDEN_TARGET_DAYS;
+      if (reachedTarget) {
+        if (!g.verified) newlyVerifiedNow = true;
+        g.verified = true;
+        g.verifiedAt = g.verifiedAt || Date.now();
+        g.lastResetReason = "";
+
+        // Credit ₹100 monthly bonus once per 30-day cycle into Referral Wallet
+        const bonusKey = `cycle_${g.cycleNumber}_${g.cycleStartDate}`;
+        if (g.lastBonusKey !== bonusKey) {
+          cur.walletBalance = (Number(cur.walletBalance) || 0) + MF_GOLDEN_MONTHLY_BONUS_RS;
+          cur.lifetimeReferralEarnings = (Number(cur.lifetimeReferralEarnings) || 0) + MF_GOLDEN_MONTHLY_BONUS_RS;
+          g.lastBonusKey = bonusKey;
+          g.lastBonusAt = Date.now();
+          g.lastBonusAmount = MF_GOLDEN_MONTHLY_BONUS_RS;
+          g.totalGoldenBonusEarned = (Number(g.totalGoldenBonusEarned) || 0) + MF_GOLDEN_MONTHLY_BONUS_RS;
+          awardedBonusNow = true;
+        }
+      }
+
+      cur.goldenVerification = g;
+      return cur;
+    });
+
+    if (tx.committed && awardedBonusNow) {
+      const msg = newlyVerifiedNow
+        ? `🏅 অভিনন্দন! আপনি গোল্ডেন টিক পেয়েছেন এবং ₹${MF_GOLDEN_MONTHLY_BONUS_RS} বোনাস আপনার রেফারেল ওয়ালেটে যুক্ত হয়েছে!`
+        : `🏅 মাসিক গোল্ডেন বোনাস +₹${MF_GOLDEN_MONTHLY_BONUS_RS} আপনার রেফারেল ওয়ালেটে যুক্ত হয়েছে!`;
+      mfToast(msg, 5500);
+      await push(ref(db, `${DB_ROOT}/notifications/${uid}`), {
+        title: newlyVerifiedNow ? "🏅 Golden Tick Unlocked! (+₹100)" : "🏅 Monthly Golden Bonus (+₹100)",
+        body: msg,
+        avatar: mfUserData?.photoURL || "",
+        peerUid: "",
+        read: false,
+        timestamp: Date.now()
+      }).catch(() => {});
+    }
+    return tx;
+  }
+
+  async function mfCreditQualifiedReferral(childUid, childData) {
+    if (!childData?.referredBy || childData.referralRewarded) return;
+    const todayKey = mfDateKey();
+    const claimDay = childData.referralClaimDate || (childData.referralClaimedAt ? mfDateKey(new Date(childData.referralClaimedAt)) : "");
+    if (!claimDay || claimDay !== todayKey) return;
+
+    const daySnap = await get(ref(db, `${DB_ROOT}/users/${childUid}/activityDays/${claimDay}`));
+    const activeSec = Number(daySnap.val()?.activeSeconds) || 0;
+    // Strictly more than 5 minutes (> 300 seconds) in that single day
+    if (activeSec <= MF_REFERRAL_ONLINE_SECONDS) return;
+
+    const parentRef = ref(db, `${DB_ROOT}/users/${childData.referredBy}`);
+    const parentTx = await runTransaction(parentRef, (cur) => {
+      if (!cur) return cur;
+      cur.referralRewardedUsers = cur.referralRewardedUsers || {};
+      if (cur.referralRewardedUsers[childUid]) return; // already credited
+      cur.referralRewardedUsers[childUid] = true;
+      cur.walletBalance = (Number(cur.walletBalance) || 0) + REFER_REWARD_RS;
+      cur.lifetimeReferralEarnings = (Number(cur.lifetimeReferralEarnings) || 0) + REFER_REWARD_RS;
+      cur.totalReferrals = (Number(cur.totalReferrals) || 0) + 1;
+      return cur;
+    });
+
+    if (parentTx.committed) {
+      await update(ref(db, `${DB_ROOT}/users/${childUid}`), {
+        referralRewarded: true,
+        referralRewardedAt: Date.now()
+      }).catch(() => {});
+
+      mfToast("🎉 ৫ মিনিটের বেশি অনলাইন থাকার শর্ত পূর্ণ হয়েছে! রেফারেল সাকসেসফুল!", 4500);
+
+      await push(ref(db, `${DB_ROOT}/notifications/${childData.referredBy}`), {
+        title: `🎁 +₹${REFER_REWARD_RS} Referral Successful!`,
+        body: `${childData.name || "Your friend"} stayed online for 5+ minutes today. ₹${REFER_REWARD_RS} added to your wallet!`,
+        avatar: childData.photoURL || "",
+        peerUid: childUid,
+        read: false,
+        timestamp: Date.now()
+      }).catch(() => {});
+    }
+  }
+
+  async function mfFlushActivity(uid) {
+    if (!uid || mfActivityBusy || mfPendingActiveSeconds <= 0) return;
+    if (window.__mfDeviceLockState?.allowedUid !== uid) return;
+
+    mfActivityBusy = true;
+    const seconds = mfPendingActiveSeconds;
+    mfPendingActiveSeconds = 0;
+    const dayKey = mfDateKey();
+
+    try {
+      const dayRef = ref(db, `${DB_ROOT}/users/${uid}/activityDays/${dayKey}`);
+      const dayTx = await runTransaction(dayRef, (cur) => ({
+        activeSeconds: (Number(cur?.activeSeconds) || 0) + seconds,
+        updatedAt: Date.now()
+      }));
+      const total = Number(dayTx.snapshot.val()?.activeSeconds) || 0;
+      mfCurrentTrackedDay = dayKey;
+      mfServerTodaySeconds = total;
+
+      if (total >= MF_DAILY_TARGET_SECONDS) {
+        await mfApplyQualifiedDay(uid, dayKey);
+      }
+
+      const freshSnap = await get(ref(db, `${DB_ROOT}/users/${uid}`));
+      const freshData = freshSnap.val() || {};
+      mfUserData = freshData;
+      await mfCreditQualifiedReferral(uid, freshData);
+      mfRenderLiveOverlays();
+    } catch (e) {
+      console.warn("Activity sync failed; retaining seconds for retry", e);
+      mfPendingActiveSeconds += seconds;
+    } finally {
+      mfActivityBusy = false;
+    }
+  }
+
+  function mfRenderLiveReferralStatus() {
+    const box = $("mfRefLiveStatusBox");
+    if (!box || !mfUserData) return;
+
+    if (!mfUserData.referredBy) {
+      box.classList.add("hidden");
+      return;
+    }
+
+    const todayKey = mfDateKey();
+    const claimDay = mfUserData.referralClaimDate || (mfUserData.referralClaimedAt ? mfDateKey(new Date(mfUserData.referralClaimedAt)) : "");
+
+    if (mfUserData.referralRewarded) {
+      box.classList.remove("hidden");
+      box.style.borderColor = "rgba(34,197,94,0.45)";
+      box.style.background = "rgba(34,197,94,0.1)";
+      box.innerHTML = `<strong style="color:#4ade80;">✅ রেফারেল ভেরিফিকেশন সম্পন্ন!</strong><div style="margin-top:3px;color:var(--muted);">আপনার ৫ মিনিটের বেশি অনলাইন থাকার শর্ত পূর্ণ হওয়ায় আপনার বন্ধুর ওয়ালেটে ₹${REFER_REWARD_RS} বোনাস যুক্ত হয়ে গেছে।</div>`;
+    } else if (claimDay === todayKey) {
+      const liveSec = mfGetLiveTodaySeconds();
+      const targetSec = MF_REFERRAL_ONLINE_SECONDS + 1; // > 5 min (5:01)
+      const pct = Math.min(100, Math.round((liveSec / targetSec) * 100));
+      const left = Math.max(0, targetSec - liveSec);
+      box.classList.remove("hidden");
+      box.style.borderColor = "rgba(34,211,238,0.4)";
+      box.style.background = "rgba(34,211,238,0.09)";
+      box.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <strong style="color:#22d3ee;">⏳ রেফারেল ভেরিফিকেশন চলছে</strong>
+          <strong style="font-variant-numeric:tabular-nums;">${mfFormatMMSS(liveSec)} / 05:01</strong>
+        </div>
+        <div class="gv-progress-track" style="height:6px;margin-bottom:5px;">
+          <div class="gv-progress-fill" style="width:${pct}%;"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);">আজকের মধ্যে আর <b>${mfFormatMMSS(left)}</b> অনলাইন থাকলেই রেফারেল সাকসেসফুল হবে।</div>`;
+    } else {
+      box.classList.remove("hidden");
+      box.style.borderColor = "rgba(239,68,68,0.35)";
+      box.style.background = "rgba(239,68,68,0.08)";
+      box.innerHTML = `<strong style="color:#fca5a5;">⚠️ রেফারেল সময়সীমা অতিক্রান্ত</strong><div style="margin-top:3px;color:var(--muted);">রেফারেল কোড বসানোর দিনেই ৫ মিনিটের বেশি অনলাইন থাকতে হয়।</div>`;
+    }
+  }
+
+  window.mfRenderLiveGoldenModal = function () {
+    const container = $("goldenVerificationContent");
+    if (!container) return;
+    if (!mfUserData) {
+      container.innerHTML = `<div style="text-align:center;padding:20px;">তথ্য লোড হচ্ছে...</div>`;
+      return;
+    }
+
+    const todayKey = mfDateKey();
+    const evalRes = mfEvaluateGoldenState(mfUserData.goldenVerification, todayKey);
+    const g = evalRes.next;
+    const isVerified = Boolean(g.verified);
+    const liveSec = mfGetLiveTodaySeconds();
+    const todayPct = Math.min(100, Math.round((liveSec / MF_DAILY_TARGET_SECONDS) * 100));
+    const todayDone = liveSec >= MF_DAILY_TARGET_SECONDS || Boolean(g.qualifiedDates?.[todayKey]);
+    const secLeftToday = Math.max(0, MF_DAILY_TARGET_SECONDS - liveSec);
+
+    const cycleDays = Math.min(MF_GOLDEN_TARGET_DAYS, Number(g.cycleDaysCount) || 0);
+    const cyclePct = Math.min(100, Math.round((cycleDays / MF_GOLDEN_TARGET_DAYS) * 100));
+    const daysNeeded = Math.max(0, MF_GOLDEN_TARGET_DAYS - cycleDays);
+    const totalBonus = Number(g.totalGoldenBonusEarned) || 0;
+
+    // Build 30-day visual tracker grid
+    let gridHtml = "";
+    for (let i = 0; i < MF_GOLDEN_CYCLE_DAYS; i++) {
+      const dk = mfAddDays(g.cycleStartDate, i);
+      const dayNum = i + 1;
+      const done = Boolean(g.qualifiedDates?.[dk]) || (dk === todayKey && todayDone);
+      let cls = "";
+      if (done) cls = "done";
+      else if (dk === todayKey) cls = "today";
+      else if (dayNum < g.daysElapsed) cls = "missed";
+      gridHtml += `<div class="gv-day-dot ${cls}" title="${dk}">${done ? "✓" : dayNum}</div>`;
+    }
+
+    container.innerHTML = `
+      <div class="gv-status-hero ${isVerified ? "verified" : ""}">
+        <div class="gv-live-pill"><span class="gv-live-dot"></span> LIVE TRACKING ON</div>
+        <div style="font-size:17px;font-weight:800;color:${isVerified ? "#fde047" : "#f8fafc"};">
+          ${isVerified ? "🏅 Golden Tick Active ✓" : "⏳ Golden Verification চলছে"}
+        </div>
+        <div style="font-size:11.5px;color:#cbd5e1;margin-top:3px;">
+          ${isVerified
+            ? `প্রতি মাসে ₹${MF_GOLDEN_MONTHLY_BONUS_RS} বোনাস • ধরে রাখতে ৩০ দিনে ২০ দিন (১৫ মিনিট/দিন) অ্যাক্টিভ থাকুন`
+            : `গোল্ডেন টিক ও প্রতি মাসে ₹${MF_GOLDEN_MONTHLY_BONUS_RS} পেতে ৩০ দিনে ২০ দিন (প্রতিদিন ১৫ মিনিট) অ্যাক্টিভ থাকুন`}
+        </div>
+      </div>
+
+      ${g.lastResetReason ? `<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:8px 10px;font-size:11.5px;color:#fca5a5;margin-bottom:10px;">⚠️ ${mfEsc(g.lastResetReason)}</div>` : ""}
+
+      <div class="gv-card">
+        <div class="gv-row">
+          <span style="font-weight:700;color:#fff;">⏱️ আজকের লাইভ সময় (১৫ মিনিট/দিন)</span>
+          <strong style="color:${todayDone ? "#4ade80" : "#22d3ee"};font-variant-numeric:tabular-nums;">${mfFormatMMSS(liveSec)} / 15:00</strong>
+        </div>
+        <div class="gv-progress-track">
+          <div class="gv-progress-fill ${todayDone ? "gold" : ""}" style="width:${todayPct}%;"></div>
+        </div>
+        <div style="font-size:11px;color:${todayDone ? "#4ade80" : "var(--muted)"};margin-top:5px;font-weight:600;">
+          ${todayDone ? "✅ আজকের ১৫ মিনিটের টার্গেট পূর্ণ হয়েছে!" : `⏳ আজকের দিন গণ্য হতে আরও ${mfFormatMMSS(secLeftToday)} বাকি`}
+        </div>
+      </div>
+
+      <div class="gv-card">
+        <div class="gv-row">
+          <span style="font-weight:700;color:#fff;">📅 ৩০ দিনের সাইকেল প্রগ্রেস</span>
+          <strong style="color:#fbbf24;">${cycleDays} / ${MF_GOLDEN_TARGET_DAYS} দিন</strong>
+        </div>
+        <div class="gv-progress-track">
+          <div class="gv-progress-fill gold" style="width:${cyclePct}%;"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">
+          ${daysNeeded === 0
+            ? "🎉 এই ৩০ দিনের সাইকেলে ২০ দিন পূর্ণ হয়েছে!"
+            : `গোল্ডেন টিক ${isVerified ? "ধরে রাখতে" : "পেতে"} আরও <b>${daysNeeded} দিন</b> পূর্ণ করতে হবে (সাইকেলে বাকি ${g.daysRemaining} দিন)।`}
+        </div>
+        <div class="gv-day-grid">${gridHtml}</div>
+      </div>
+
+      <div class="gv-stat-grid">
+        <div class="gv-stat-box">
+          <div class="gv-stat-val" style="color:#22d3ee;">${g.daysElapsed}/30</div>
+          <div class="gv-stat-lbl">সাইকেল দিন</div>
+        </div>
+        <div class="gv-stat-box">
+          <div class="gv-stat-val" style="color:#fbbf24;">₹${MF_GOLDEN_MONTHLY_BONUS_RS}/মাস</div>
+          <div class="gv-stat-lbl">গোল্ডেন বোনাস</div>
+        </div>
+        <div class="gv-stat-box">
+          <div class="gv-stat-val" style="color:#4ade80;">₹${totalBonus}</div>
+          <div class="gv-stat-lbl">মোট বোনাস</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);line-height:1.5;background:rgba(255,255,255,0.03);padding:9px 11px;border-radius:11px;border:1px solid var(--border);">
+        • ৩০ দিনের মধ্যে অন্তত ২০ দিন (প্রতিদিন ন্যূনতম ১৫ মিনিট) অ্যাপ ব্যবহার করলে গোল্ডেন টিক পাবেন ও প্রতি মাসে <b>₹১০০</b> সরাসরি আপনার <b>Referral Wallet</b>-এ যুক্ত হবে।<br/>
+        • কোনো মাসে ২০ দিনের ১ দিনও মিস হলে গোল্ডেন টিক চলে যাবে এবং প্রথম থেকে কাউন্টডাউন শুরু হবে।
+      </div>`;
+  };
+
+  function mfRenderLiveOverlays() {
+    if (!$("goldenVerificationModal")?.classList.contains("hidden")) {
+      window.mfRenderLiveGoldenModal();
+    }
+    if ($("referView")?.classList.contains("active")) {
+      mfRenderLiveReferralStatus();
+    }
+    const goldenLabel = $("menuGoldenStatus");
+    if (goldenLabel && mfUserData) {
+      const g = mfUserData.goldenVerification || {};
+      const cDays = Math.min(MF_GOLDEN_TARGET_DAYS, Number(g.cycleDaysCount) || 0);
+      goldenLabel.textContent = g.verified ? "GOLDEN ✓" : `${cDays}/20 দিন`;
+    }
+  }
+
+  function mfStartActivityTracking(uid) {
+    clearInterval(mfActivityTimer);
+    mfPendingActiveSeconds = 0;
+    mfCurrentTrackedDay = mfDateKey();
+    mfServerTodaySeconds = Number(mfUserData?.activityDays?.[mfCurrentTrackedDay]?.activeSeconds) || 0;
+    mfLastRefCrossFlushed = false;
+    mfLastGoldenCrossFlushed = false;
+
+    // Fetch exact server seconds for today + evaluate 30-day cycle rollover
+    get(ref(db, `${DB_ROOT}/users/${uid}/activityDays/${mfCurrentTrackedDay}`))
+      .then((snap) => {
+        mfServerTodaySeconds = Number(snap.val()?.activeSeconds) || 0;
+        mfRenderLiveOverlays();
+      })
+      .catch(() => {});
+    mfSyncGoldenCycleOnBoot(uid);
+
+    // 1-second smooth ticker (Android WebView safe: does NOT depend on document.hasFocus())
+    mfActivityTimer = setInterval(() => {
+      if (window.__mfDeviceLockState?.allowedUid !== uid) return;
+      const nowDay = mfDateKey();
+      if (nowDay !== mfCurrentTrackedDay) {
+        // Midnight crossed while app open
+        mfFlushActivity(uid);
+        mfCurrentTrackedDay = nowDay;
+        mfServerTodaySeconds = 0;
+        mfLastRefCrossFlushed = false;
+        mfLastGoldenCrossFlushed = false;
+        mfSyncGoldenCycleOnBoot(uid);
+      }
+
+      if (!document.hidden && navigator.onLine) {
+        mfPendingActiveSeconds += 1;
+        const liveTotal = mfGetLiveTodaySeconds();
+
+        // Immediate flush right when crossing 5-min referral threshold or 15-min golden threshold
+        const hitRefGoal = !mfLastRefCrossFlushed && liveTotal > MF_REFERRAL_ONLINE_SECONDS && mfUserData?.referredBy && !mfUserData?.referralRewarded;
+        const hitGoldenGoal = !mfLastGoldenCrossFlushed && liveTotal >= MF_DAILY_TARGET_SECONDS && !mfUserData?.goldenVerification?.qualifiedDates?.[nowDay];
+
+        if (hitRefGoal) mfLastRefCrossFlushed = true;
+        if (hitGoldenGoal) mfLastGoldenCrossFlushed = true;
+
+        if (hitRefGoal || hitGoldenGoal || mfPendingActiveSeconds >= 15) {
+          mfFlushActivity(uid);
+        }
+        mfRenderLiveOverlays();
+      }
+    }, 1000);
+
+    if (mfVisibilityHandler) document.removeEventListener("visibilitychange", mfVisibilityHandler);
+    if (mfPageHideHandler) window.removeEventListener("pagehide", mfPageHideHandler);
+    mfVisibilityHandler = () => {
+      if (document.hidden) mfFlushActivity(uid);
+    };
+    mfPageHideHandler = () => mfFlushActivity(uid);
+    document.addEventListener("visibilitychange", mfVisibilityHandler);
+    window.addEventListener("pagehide", mfPageHideHandler);
+  }
+
+  // ==================== 6. DEVICE-VERIFIED SYNC CONTROLLER ====================
+  function stopMfSecondaryListeners() {
     if (mfUserRefListener) {
       off(mfUserRefListener);
       mfUserRefListener = null;
     }
+    clearInterval(mfActivityTimer);
+    mfPendingActiveSeconds = 0;
+    mfServerTodaySeconds = 0;
+    mfUser = null;
+    mfUserData = null;
+    $("mfRefClaimModal")?.classList.add("hidden");
+  }
 
-    if (user) {
-      mfUser = user;
-      refPopupShownThisSession = false;
-      dismissBootSplash("Welcome back!");
+  function startMfSecondaryForVerifiedUser(uid) {
+    const user = auth.currentUser;
+    if (!user || user.uid !== uid) return;
+    if (mfUser && mfUser.uid === uid && mfUserRefListener) return;
 
-      // Watch user's DB profile (waits cleanly until original ensureUserProfile creates it)
-      mfUserRefListener = ref(db, `${DB_ROOT}/users/${user.uid}`);
-      onValue(mfUserRefListener, async (snap) => {
-        const val = snap.val();
-        if (!val) return;
-        mfUserData = val;
+    stopMfSecondaryListeners();
+    mfUser = user;
+    refPopupShownThisSession = false;
+    dismissBootSplash("Welcome back!");
 
-        // Ensure unique Referral Code & Wallet fields exist
-        if (!val.referralCode) {
-          const newCode = generateReferralCode(user.uid);
-          const patch = { referralCode: newCode };
-          if (val.walletBalance == null) patch.walletBalance = 0;
-          if (val.lifetimeReferralEarnings == null) patch.lifetimeReferralEarnings = 0;
-          if (val.totalReferrals == null) patch.totalReferrals = 0;
-          await update(ref(db, `${DB_ROOT}/users/${user.uid}`), patch).catch(() => {});
-          set(ref(db, `${DB_ROOT}/referralCodes/${newCode}`), user.uid).catch(() => {});
-          return;
-        }
+    mfUserRefListener = ref(db, `${DB_ROOT}/users/${user.uid}`);
+    onValue(mfUserRefListener, async (snap) => {
+      const val = snap.val();
+      if (!val) return;
+      mfUserData = val;
 
-        renderReferWalletUI();
-        maybeOpenOneTimeRefModal(user.uid, val);
-      });
+      const todayKey = mfDateKey();
+      if (val.activityDays && val.activityDays[todayKey]) {
+        mfCurrentTrackedDay = todayKey;
+        mfServerTodaySeconds = Math.max(mfServerTodaySeconds, Number(val.activityDays[todayKey].activeSeconds) || 0);
+      }
+
+      // Ensure unique Referral Code & Wallet fields exist
+      if (!val.referralCode) {
+        const newCode = generateReferralCode(user.uid);
+        const patch = { referralCode: newCode };
+        if (val.walletBalance == null) patch.walletBalance = 0;
+        if (val.lifetimeReferralEarnings == null) patch.lifetimeReferralEarnings = 0;
+        if (val.totalReferrals == null) patch.totalReferrals = 0;
+        await update(ref(db, `${DB_ROOT}/users/${user.uid}`), patch).catch(() => {});
+        set(ref(db, `${DB_ROOT}/referralCodes/${newCode}`), user.uid).catch(() => {});
+        return;
+      }
+
+      renderReferWalletUI();
+      mfRenderLiveOverlays();
+      maybeOpenOneTimeRefModal(user.uid, val);
+    });
+
+    mfStartActivityTracking(user.uid);
+  }
+
+  // Wait for primary script's Device Lock check before starting Refer & Activity engines
+  window.addEventListener("mf:device-verified", (e) => {
+    const verifiedUid = e.detail?.uid || null;
+    if (verifiedUid) {
+      startMfSecondaryForVerifiedUser(verifiedUid);
     } else {
-      mfUser = null;
-      mfUserData = null;
-      $("mfRefClaimModal")?.classList.add("hidden");
+      stopMfSecondaryListeners();
       dismissBootSplash("Please sign in to continue");
     }
   });
+
+  // Also check if already verified before listener attached
+  if (window.__mfDeviceLockState?.allowedUid) {
+    startMfSecondaryForVerifiedUser(window.__mfDeviceLockState.allowedUid);
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      stopMfSecondaryListeners();
+      dismissBootSplash("Please sign in to continue");
+    } else if (window.__mfDeviceLockState?.allowedUid === user.uid) {
+      startMfSecondaryForVerifiedUser(user.uid);
+    }
+  });
 </script>
+<!-- ==================== MAKE FRIEND MANDATORY GPS GATE + AUTO LIVE MAP OVERRIDE PACK ==================== -->
+<style>
+  #mfGpsGateOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999990;
+    background: radial-gradient(circle at 20% 15%, rgba(34, 211, 238, 0.22), transparent 46%),
+                radial-gradient(circle at 80% 85%, rgba(236, 72, 153, 0.22), transparent 46%),
+                rgba(9, 13, 22, 0.97);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.22s ease;
+  }
+  #mfGpsGateOverlay.hidden { display: none !important; }
+
+  .mf-gps-card {
+    width: 100%;
+    max-width: 390px;
+    background: linear-gradient(180deg, rgba(22, 31, 51, 0.98), rgba(13, 19, 34, 0.98));
+    border: 1px solid rgba(34, 211, 238, 0.42);
+    border-radius: 26px;
+    padding: 26px 20px 22px;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 32px rgba(99, 102, 241, 0.18);
+    animation: popIn 0.26s cubic-bezier(.22, 1, .36, 1);
+  }
+  .mf-gps-radar {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.24), rgba(34, 211, 238, 0.2));
+    border: 2px solid rgba(34, 211, 238, 0.6);
+    display: grid;
+    place-items: center;
+    font-size: 32px;
+    color: #22d3ee;
+  }
+  .mf-gps-radar::before {
+    content: "";
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 2px solid rgba(34, 211, 238, 0.35);
+    animation: mfGpsPulse 1.8s infinite ease-out;
+  }
+  .mf-gps-radar.error {
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.14);
+  }
+  .mf-gps-radar.error::before {
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  @keyframes mfGpsPulse {
+    0% { transform: scale(0.92); opacity: 0.9; }
+    100% { transform: scale(1.38); opacity: 0; }
+  }
+  .mf-gps-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #f8fafc;
+    margin-bottom: 8px;
+  }
+  .mf-gps-desc {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+  .mf-gps-err-box {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.38);
+    color: #fca5a5;
+    border-radius: 13px;
+    padding: 9px 11px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.45;
+    margin-bottom: 14px;
+    text-align: left;
+  }
+  .mf-gps-steps {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 13px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    color: #cbd5e1;
+    text-align: left;
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+  .mf-gps-btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+</style>
+
+<!-- Mandatory Fullscreen GPS Gate (Blocks app entry until Location is ON & fixed) -->
+<div id="mfGpsGateOverlay" role="dialog" aria-modal="true">
+  <div class="mf-gps-card">
+    <div id="mfGpsRadar" class="mf-gps-radar">
+      <i id="mfGpsStatusIcon" class="fa-solid fa-location-dot"></i>
+    </div>
+    <div id="mfGpsTitle" class="mf-gps-title">লোকেশন (GPS) যাচাই করা হচ্ছে...</div>
+    <div id="mfGpsDesc" class="mf-gps-desc">
+      Make Friend একটি লাইভ লোকেশন ভিত্তিক অ্যাপ। অ্যাপে প্রবেশ করতে আপনার মোবাইলের GPS / Location চালু থাকা বাধ্যতামূলক।
+    </div>
+    <div id="mfGpsErrBox" class="mf-gps-err-box hidden"></div>
+    <div id="mfGpsStepsBox" class="mf-gps-steps hidden">
+      <b>কীভাবে চালু করবেন:</b><br/>
+      ১. নিচের <b>Turn On Location / GPS</b> বাটনে ট্যাপ করুন (অথবা ফোনের নোটিফিকেশন বার থেকে Location অন করুন)।<br/>
+      ২. Location পারমিশন চাইলে <b>Allow</b> সিলেক্ট করুন।<br/>
+      ৩. অন হওয়ার সাথে সাথেই অ্যাপ অটোমেটিক খুলে যাবে।
+    </div>
+    <div class="mf-gps-btn-row">
+      <button type="button" id="mfGpsEnableBtn" class="btn-primary">
+        <i class="fa-solid fa-location-crosshairs"></i> Turn On Location / GPS
+      </button>
+      <button type="button" id="mfGpsRetryBtn" class="mf-btn-soft">
+        <i class="fa-solid fa-rotate-right"></i> আমি GPS অন করেছি — আবার চেক করুন
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { getApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const DB_ROOT = "makeFriendsApp";
+  const app = getApps().length ? getApp() : null;
+  const auth = app ? getAuth(app) : null;
+  const db = app ? getDatabase(app) : null;
+
+  const $ = (id) => document.getElementById(id);
+
+  // ==================== 1. HOOK LEAFLET MAP INSTANCE AUTOMATICALLY ====================
+  window.__mfLeafletMap = window.__mfLeafletMap || null;
+  window.__mfLiveCoords = window.__mfLiveCoords || null;
+  window.__mfSuppressAutoCenterUntil = 0;
+
+  let mfUserDraggingMap = false;
+
+  if (window.L && window.L.Map && typeof window.L.Map.addInitHook === "function") {
+    window.L.Map.addInitHook(function () {
+      window.__mfLeafletMap = this;
+      this.on("dragstart", () => { mfUserDraggingMap = true; });
+      this.on("dragend", () => {
+        setTimeout(() => { mfUserDraggingMap = false; }, 1200);
+      });
+      // Immediately snap freshly created map to live GPS coordinates
+      setTimeout(() => {
+        if (window.__mfLiveCoords && Date.now() > window.__mfSuppressAutoCenterUntil) {
+          this.invalidateSize();
+          this.setView([window.__mfLiveCoords.lat, window.__mfLiveCoords.lng], 14, { animate: false });
+        }
+      }, 180);
+    });
+  }
+
+  // Respect "Show on Map" clicks for other users so auto-center doesn't override them
+  if (typeof window.focusUserOnMap === "function") {
+    const origFocusUser = window.focusUserOnMap;
+    window.focusUserOnMap = (uid) => {
+      window.__mfSuppressAutoCenterUntil = Date.now() + 2800;
+      return origFocusUser(uid);
+    };
+  }
+
+  // ==================== 2. GPS STATE & HELPERS ====================
+  let mfGpsWatchId = null;
+  let mfGpsCheckBusy = false;
+  let mfGpsUnlocked = false;
+  let mfLastSyncedLat = null;
+  let mfLastSyncedLng = null;
+  let mfLastSyncedUid = null;
+  let mfLastSyncTime = 0;
+  let mfLastGeoLat = null;
+  let mfLastGeoLng = null;
+  let mfCachedPlaceName = "";
+  let mfAutoPromptedSettingsOnce = false;
+
+  function calcMeters(lat1, lon1, lat2, lon2) {
+    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return Infinity;
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function isNativeGpsEnabled() {
+    if (window.AndroidBridge && typeof window.AndroidBridge.isGpsEnabled === "function") {
+      try {
+        return Boolean(window.AndroidBridge.isGpsEnabled());
+      } catch {}
+    }
+    return null;
+  }
+
+  function triggerNativeLocationSettings() {
+    if (window.AndroidBridge && typeof window.AndroidBridge.requestLocationPermission === "function") {
+      try { window.AndroidBridge.requestLocationPermission(); } catch {}
+    }
+    if (window.AndroidBridge && typeof window.AndroidBridge.openLocationSettings === "function") {
+      try {
+        window.AndroidBridge.openLocationSettings();
+        return true;
+      } catch {}
+    }
+    return false;
+  }
+
+  function setGpsGateUI({ show, checking = false, errorMsg = "" }) {
+    const overlay = $("mfGpsGateOverlay");
+    if (!overlay) return;
+    overlay.classList.toggle("hidden", !show);
+    if (!show) return;
+
+    const radar = $("mfGpsRadar");
+    const icon = $("mfGpsStatusIcon");
+    const title = $("mfGpsTitle");
+    const errBox = $("mfGpsErrBox");
+    const steps = $("mfGpsStepsBox");
+    const retryBtn = $("mfGpsRetryBtn");
+
+    if (checking) {
+      radar?.classList.remove("error");
+      if (icon) icon.className = "fa-solid fa-spinner fa-spin";
+      if (title) title.textContent = "লাইভ GPS লোকেশন খোঁজা হচ্ছে...";
+      errBox?.classList.add("hidden");
+      steps?.classList.add("hidden");
+      if (retryBtn) retryBtn.disabled = true;
+    } else {
+      radar?.classList.add("error");
+      if (icon) icon.className = "fa-solid fa-location-crosshairs";
+      if (title) title.textContent = "লোকেশন (GPS) চালু করা বাধ্যতামূলক";
+      if (errBox) {
+        errBox.textContent = errorMsg || "মোবাইলের GPS / Location বন্ধ রয়েছে। Location চালু না করা পর্যন্ত অ্যাপে প্রবেশ করা যাবে না।";
+        errBox.classList.remove("hidden");
+      }
+      steps?.classList.remove("hidden");
+      if (retryBtn) retryBtn.disabled = false;
+    }
+  }
+
+  async function mfReverseGeocode(lat, lng) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12&accept-language=en`
+      );
+      if (!res.ok) return "";
+      const data = await res.json();
+      const a = data.address || {};
+      const city = a.city || a.town || a.village || a.suburb || a.county || a.state_district || "";
+      const state = a.state || "";
+      return [city, state].filter(Boolean).join(", ");
+    } catch {
+      return "";
+    }
+  }
+
+  // ==================== 3. AUTO SYNC TO FIREBASE + AUTO REFRESH MAP ====================
+  async function syncLiveCoordsToApp(lat, lng, accuracy = 0, forceCenterMap = false) {
+    const now = Date.now();
+    const prevCoords = window.__mfLiveCoords;
+    const movedFromPrev = prevCoords ? calcMeters(prevCoords.lat, prevCoords.lng, lat, lng) : Infinity;
+
+    window.__mfLiveCoords = { lat, lng, accuracy, updatedAt: now };
+
+    // 1. Auto-center & refresh Leaflet Map automatically
+    const m = window.__mfLeafletMap;
+    if (m && Date.now() > window.__mfSuppressAutoCenterUntil) {
+      const shouldPan = forceCenterMap || (!mfUserDraggingMap && movedFromPrev >= 80);
+      if (shouldPan) {
+        try {
+          m.invalidateSize();
+          const targetZoom = Math.max(m.getZoom() || 13, 14);
+          m.flyTo([lat, lng], targetZoom, { duration: 0.65 });
+        } catch {}
+      }
+    }
+
+    // 2. Auto-update user's real live coordinates in Firebase RTDB
+    const user = auth?.currentUser;
+    if (!user || !db) return;
+    if (window.__mfDeviceLockState && window.__mfDeviceLockState.allowedUid && window.__mfDeviceLockState.allowedUid !== user.uid) {
+      return;
+    }
+
+    const movedFromSynced = calcMeters(mfLastSyncedLat, mfLastSyncedLng, lat, lng);
+    const isNewUserSession = mfLastSyncedUid !== user.uid;
+    const shouldWriteDb = isNewUserSession || movedFromSynced >= 30 || (now - mfLastSyncTime) >= 60000;
+    if (!shouldWriteDb) return;
+
+    mfLastSyncedLat = lat;
+    mfLastSyncedLng = lng;
+    mfLastSyncedUid = user.uid;
+    mfLastSyncTime = now;
+
+    // Reverse geocode only on first fix or after moving >= 150m
+    const movedFromGeo = calcMeters(mfLastGeoLat, mfLastGeoLng, lat, lng);
+    if (!mfCachedPlaceName || movedFromGeo >= 150) {
+      mfLastGeoLat = lat;
+      mfLastGeoLng = lng;
+      const resolved = await mfReverseGeocode(lat, lng);
+      if (resolved) mfCachedPlaceName = resolved;
+    }
+
+    const patch = {
+      lat,
+      lng,
+      lastLocationAt: now
+    };
+    if (mfCachedPlaceName) patch.placeName = mfCachedPlaceName;
+
+    try {
+      await update(ref(db, `${DB_ROOT}/users/${user.uid}`), patch);
+    } catch {}
+  }
+
+  // ==================== 4. MANDATORY GPS ENFORCEMENT + LIVE WATCHER ====================
+  function startLiveGpsWatcher() {
+    if (!navigator.geolocation || mfGpsWatchId !== null) return;
+    mfGpsWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (isNativeGpsEnabled() === false) {
+          mfGpsUnlocked = false;
+          setGpsGateUI({
+            show: true,
+            checking: false,
+            errorMsg: "আপনার মোবাইলের GPS / Location বন্ধ হয়ে গেছে। অ্যাপ ব্যবহার করতে Location আবার চালু করুন।"
+          });
+          return;
+        }
+        const wasLocked = !mfGpsUnlocked;
+        mfGpsUnlocked = true;
+        setGpsGateUI({ show: false });
+        syncLiveCoordsToApp(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, wasLocked);
+      },
+      (err) => {
+        if (err && (err.code === 1 || err.code === 2)) {
+          mfGpsUnlocked = false;
+          const msg = err.code === 1
+            ? "Location পারমিশন Deny করা আছে। অ্যাপে প্রবেশ করতে Location পারমিশন Allow করুন।"
+            : "মোবাইলের GPS / Location বন্ধ রয়েছে। Location চালু না করলে অ্যাপে প্রবেশ করা যাবে না।";
+          setGpsGateUI({ show: true, checking: false, errorMsg: msg });
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  }
+
+  function requestPositionPromise(options) {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
+  }
+
+  async function enforceGpsAndRefresh({ forceCenterMap = true, silentIfUnlocked = false, autoOpenSettings = false } = {}) {
+    if (mfGpsCheckBusy) return;
+    mfGpsCheckBusy = true;
+
+    try {
+      // Step A: Instant hardware check via Sketchware AndroidBridge (if available)
+      const nativeOn = isNativeGpsEnabled();
+      if (nativeOn === false) {
+        mfGpsUnlocked = false;
+        setGpsGateUI({
+          show: true,
+          checking: false,
+          errorMsg: "আপনার মোবাইলের GPS / Location বন্ধ আছে। অনুগ্রহ করে Location চালু করুন—অন না করলে অ্যাপে প্রবেশ করা যাবে না।"
+        });
+        if (autoOpenSettings && !mfAutoPromptedSettingsOnce) {
+          mfAutoPromptedSettingsOnce = true;
+          setTimeout(() => triggerNativeLocationSettings(), 1150);
+        }
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        mfGpsUnlocked = false;
+        setGpsGateUI({
+          show: true,
+          checking: false,
+          errorMsg: "এই ডিভাইস বা ব্রাউজারে GPS লোকেশন সাপোর্ট পাওয়া যায়নি।"
+        });
+        return;
+      }
+
+      if (!silentIfUnlocked || !mfGpsUnlocked) {
+        setGpsGateUI({ show: true, checking: true });
+      }
+
+      let pos = null;
+      try {
+        // High-accuracy fresh GPS fix
+        pos = await requestPositionPromise({ enableHighAccuracy: true, timeout: 8500, maximumAge: 0 });
+      } catch (err1) {
+        if (err1 && (err1.code === 1 || err1.code === 2)) {
+          throw err1;
+        }
+        // Indoor timeout fallback (network/Wi-Fi location when Android Location IS enabled)
+        if (isNativeGpsEnabled() === false) {
+          throw { code: 2 };
+        }
+        pos = await requestPositionPromise({ enableHighAccuracy: false, timeout: 6500, maximumAge: 10000 });
+      }
+
+      if (isNativeGpsEnabled() === false) {
+        throw { code: 2 };
+      }
+
+      mfGpsUnlocked = true;
+      setGpsGateUI({ show: false });
+      startLiveGpsWatcher();
+      await syncLiveCoordsToApp(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, forceCenterMap);
+    } catch (err) {
+      mfGpsUnlocked = false;
+      let errMsg = "মোবাইলের GPS / Location বন্ধ আছে অথবা সিগন্যাল পাওয়া যাচ্ছে না। Location চালু করে আবার চেষ্টা করুন।";
+      if (err && err.code === 1) {
+        errMsg = "Location পারমিশন দেওয়া হয়নি। ফোনের Settings > Apps > Make Friend > Permissions থেকে Location Allow করুন।";
+      } else if (err && err.code === 2) {
+        errMsg = "আপনার মোবাইলের Location (GPS) বন্ধ আছে। GPS চালু না করলে অ্যাপে প্রবেশ করা যাবে না।";
+      }
+      setGpsGateUI({ show: true, checking: false, errorMsg: errMsg });
+    } finally {
+      mfGpsCheckBusy = false;
+    }
+  }
+
+  // Gate Buttons
+  $("mfGpsEnableBtn")?.addEventListener("click", () => {
+    const openedNative = triggerNativeLocationSettings();
+    if (!openedNative) {
+      enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: false });
+    }
+  });
+
+  $("mfGpsRetryBtn")?.addEventListener("click", () => {
+    enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: false });
+  });
+
+  // ==================== 5. CHAIN INTO TAB SWITCH, RESUME & AUTH ====================
+  const prevSwitchTab = typeof window.switchTab === "function" ? window.switchTab : null;
+  if (prevSwitchTab) {
+    window.switchTab = (tabId) => {
+      prevSwitchTab(tabId);
+      if (tabId === "mapView") {
+        setTimeout(() => {
+          const allowCenter = Date.now() > window.__mfSuppressAutoCenterUntil;
+          if (window.__mfLeafletMap) {
+            window.__mfLeafletMap.invalidateSize();
+            if (window.__mfLiveCoords && allowCenter) {
+              window.__mfLeafletMap.flyTo(
+                [window.__mfLiveCoords.lat, window.__mfLiveCoords.lng],
+                Math.max(window.__mfLeafletMap.getZoom() || 13, 14),
+                { duration: 0.6 }
+              );
+            }
+          }
+          enforceGpsAndRefresh({ forceCenterMap: allowCenter, silentIfUnlocked: true });
+        }, 420);
+      }
+    };
+  }
+
+  // Auto-recheck & refresh whenever user returns from Settings or re-opens the app
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: true });
+    }
+  });
+  window.addEventListener("focus", () => {
+    enforceGpsAndRefresh({ forceCenterMap: false, silentIfUnlocked: true });
+  });
+
+  // Periodic guard: if user turns GPS OFF mid-session, lock immediately
+  setInterval(() => {
+    if (document.hidden) return;
+    const nativeOn = isNativeGpsEnabled();
+    if (nativeOn === false) {
+      mfGpsUnlocked = false;
+      setGpsGateUI({
+        show: true,
+        checking: false,
+        errorMsg: "আপনি মোবাইলের GPS / Location বন্ধ করেছেন। অ্যাপ ব্যবহার চালিয়ে যেতে Location চালু করুন।"
+      });
+    } else if (nativeOn === true && !mfGpsUnlocked) {
+      enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: false });
+    }
+  }, 3000);
+
+  // Sync GPS to Firebase immediately after login / device verification
+  window.addEventListener("mf:device-verified", (e) => {
+    if (e.detail?.uid) {
+      mfLastSyncedUid = null;
+      if (window.__mfLiveCoords) {
+        setTimeout(() => {
+          syncLiveCoordsToApp(window.__mfLiveCoords.lat, window.__mfLiveCoords.lng, window.__mfLiveCoords.accuracy, true);
+        }, 1200);
+      } else {
+        enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: false });
+      }
+    }
+  });
+
+  if (auth) {
+    onAuthStateChanged(auth, (user) => {
+      if (user && window.__mfLiveCoords) {
+        setTimeout(() => {
+          syncLiveCoordsToApp(window.__mfLiveCoords.lat, window.__mfLiveCoords.lng, window.__mfLiveCoords.accuracy, true);
+        }, 1400);
+      }
+    });
+  }
+
+  // Boot check immediately on app entry
+  enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: false, autoOpenSettings: true });
+</script>
+<!-- ==================== END MANDATORY GPS GATE + AUTO LIVE MAP OVERRIDE PACK ==================== -->
 
 </body>
 </html>
