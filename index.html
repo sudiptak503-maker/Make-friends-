@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
-  <!-- Leaflet Map CSS (100% Free - No API Key Needed) -->
+  <!-- Leaflet Map CSS (100% Free - Zero API Key Required) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
@@ -19,7 +19,7 @@
       --bg: #090d16;
       --surface: #121826;
       --surface-2: #1a2338;
-      --glass: rgba(18, 24, 38, 0.86);
+      --glass: rgba(18, 24, 38, 0.88);
       --border: rgba(255, 255, 255, 0.09);
       --primary: #6366f1;
       --primary-2: #ec4899;
@@ -53,7 +53,72 @@
       outline: none;
     }
 
+    button { transition: transform 0.16s cubic-bezier(.22,1,.36,1), opacity 0.16s, background 0.2s, border-color 0.2s; }
+    button:active { transform: scale(0.96); }
+
     .hidden { display: none !important; }
+
+    /* ================= ANIMATIONS & LAZY LOAD / SKELETON BUFFERING ================= */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); opacity: 0.7; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulsePin {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+      70% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .lazy-img {
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .lazy-img.loaded { opacity: 1; }
+
+    .skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .skel {
+      background: linear-gradient(90deg, #161f33 25%, #23304d 50%, #161f33 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.35s infinite linear;
+      border-radius: 10px;
+    }
+
+    /* Global Buffering Overlay */
+    #globalLoader {
+      position: fixed; inset: 0; z-index: 9500;
+      background: rgba(9, 13, 22, 0.78); backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+      animation: fadeIn 0.2s ease;
+    }
+    .spinner-ring {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 3.5px solid rgba(255,255,255,0.14);
+      border-top-color: var(--primary-2); border-right-color: var(--accent);
+      animation: spin 0.75s linear infinite;
+    }
 
     /* ================= TOAST & IN-APP NOTIFICATION BANNER ================= */
     #toast {
@@ -62,14 +127,14 @@
       left: 50%;
       transform: translateX(-50%) translateY(90px);
       background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.16);
       color: #fff;
       padding: 10px 18px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 600;
       z-index: 9998;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.48);
       transition: transform 0.28s cubic-bezier(.22,1,.36,1), opacity 0.25s;
       opacity: 0;
       max-width: 90vw;
@@ -87,7 +152,7 @@
       max-width: 420px;
       background: rgba(20, 28, 48, 0.96);
       backdrop-filter: blur(18px);
-      border: 1px solid rgba(99, 102, 241, 0.45);
+      border: 1px solid rgba(99, 102, 241, 0.5);
       border-radius: 18px;
       padding: 11px 14px;
       display: flex;
@@ -101,12 +166,8 @@
     #inAppNotifBanner.show { transform: translateX(-50%) translateY(0); }
 
     .notif-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--primary);
-      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;
     }
     .notif-body { flex: 1; min-width: 0; }
     .notif-title { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
@@ -114,30 +175,20 @@
 
     /* ================= AUTH SCREEN ================= */
     #authScreen {
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
+      position: fixed; inset: 0; z-index: 2000;
       background: radial-gradient(circle at top right, rgba(99,102,241,0.28), transparent 48%),
                   radial-gradient(circle at bottom left, rgba(236,72,153,0.22), transparent 50%),
                   var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      overflow-y: auto;
+      display: flex; align-items: center; justify-content: center;
+      padding: 18px; overflow-y: auto;
     }
-
     .auth-card {
-      width: 100%;
-      max-width: 400px;
-      background: rgba(18, 24, 38, 0.92);
-      backdrop-filter: blur(18px);
-      border: 1px solid var(--border);
-      border-radius: 26px;
-      padding: 26px 22px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      width: 100%; max-width: 400px;
+      background: rgba(18, 24, 38, 0.92); backdrop-filter: blur(18px);
+      border: 1px solid var(--border); border-radius: 26px;
+      padding: 26px 22px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      animation: popIn 0.3s cubic-bezier(.22,1,.36,1);
     }
-
     .brand-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
     .brand-icon {
       width: 46px; height: 46px; border-radius: 15px;
@@ -158,7 +209,7 @@
     }
     .auth-tab {
       border: none; background: transparent; padding: 10px; border-radius: 11px;
-      font-size: 13.5px; font-weight: 700; color: var(--muted); cursor: pointer; transition: 0.2s;
+      font-size: 13.5px; font-weight: 700; color: var(--muted); cursor: pointer;
     }
     .auth-tab.active {
       background: linear-gradient(135deg, var(--primary), #4f46e5);
@@ -179,9 +230,7 @@
       font-size: 14.5px; font-weight: 700;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: #fff; cursor: pointer; box-shadow: 0 8px 20px rgba(99,102,241,0.35);
-      transition: transform 0.15s, opacity 0.15s;
     }
-    .btn-primary:active { transform: scale(0.98); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .divider { display: flex; align-items: center; gap: 10px; margin: 15px 0; color: var(--muted); font-size: 12px; }
@@ -195,7 +244,7 @@
     .auth-note { margin-top: 13px; font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.5; }
 
     /* ================= APP SHELL ================= */
-    #appShell { display: flex; flex-direction: column; height: 100dvh; width: 100%; }
+    #appShell { display: flex; flex-direction: column; height: 100dvh; width: 100%; animation: fadeIn 0.25s ease; }
 
     .app-header {
       height: var(--header-h); padding: 0 12px;
@@ -219,7 +268,7 @@
       background: rgba(99,102,241,0.16); border: 1px solid rgba(99,102,241,0.4);
       border-radius: 999px; padding: 6px 10px; font-size: 11.5px; font-weight: 600;
       display: flex; align-items: center; gap: 4px; cursor: pointer;
-      max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 122px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     .icon-btn {
@@ -237,10 +286,12 @@
     .views-container { flex: 1; position: relative; overflow: hidden; }
     .view-panel {
       position: absolute; inset: 0; overflow-y: auto;
-      padding: 12px 14px 24px; display: none;
+      padding: 12px 14px 28px; display: none;
+      scroll-behavior: smooth;
     }
-    .view-panel.active { display: block; }
+    .view-panel.active { display: block; animation: fadeSlideUp 0.25s cubic-bezier(.22,1,.36,1); }
     #mapView { padding: 0; overflow: hidden; }
+    #mapView.active { animation: fadeIn 0.2s ease; }
 
     /* Filter Chips */
     .filter-row {
@@ -256,18 +307,19 @@
     .chip.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border-color: transparent; }
 
     .section-label {
-      font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;
-      letter-spacing: 0.4px; margin: 10px 2px 8px; display: flex; justify-content: space-between;
+      font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.45px; margin: 10px 2px 8px; display: flex; justify-content: space-between; align-items: center;
     }
 
-    /* Profile Card */
+    /* Profile Card on Home */
     .profile-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 13px; margin-bottom: 11px;
+      animation: fadeSlideUp 0.28s ease both;
     }
     .profile-card.is-online {
       border-color: rgba(34, 197, 94, 0.28);
-      background: linear-gradient(180deg, rgba(34,197,94,0.05), var(--surface));
+      background: linear-gradient(180deg, rgba(34,197,94,0.06), var(--surface));
     }
     .card-top { display: flex; align-items: center; gap: 11px; cursor: pointer; }
     .avatar-wrap { position: relative; width: 54px; height: 54px; flex-shrink: 0; }
@@ -298,7 +350,7 @@
     .mini-stats-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
     .mini-stat-pill {
       font-size: 11px; color: #cbd5e1; background: rgba(255,255,255,0.06);
-      padding: 2px 8px; border-radius: 7px; font-weight: 600;
+      padding: 2.5px 8px; border-radius: 8px; font-weight: 600;
     }
 
     .plan-box {
@@ -320,24 +372,66 @@
     .act-btn.impressed { background: rgba(236, 72, 153, 0.18); border-color: rgba(236, 72, 153, 0.5); color: #f472b6; }
     .act-btn.msg-btn { background: linear-gradient(135deg, var(--primary), #4f46e5); border-color: transparent; color: #fff; }
 
-    /* ================= MAP VIEW ================= */
+    /* ================= MAP VIEW (FREE NO-KEY TILES + SEARCH + PIN MODE) ================= */
     #map { width: 100%; height: 100%; background: #0d1322; z-index: 1; }
-    .map-overlay-top {
-      position: absolute; top: 12px; left: 12px; right: 12px; z-index: 450;
+
+    /* Clean Dark Map CSS filter applied ONLY to map tiles (keeps pins & avatars crisp!) */
+    #map.dark-map-tiles .leaflet-tile-pane {
+      filter: invert(100%) hue-rotate(180deg) brightness(92%) contrast(90%);
+    }
+
+    .map-top-stack {
+      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 460;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .map-search-wrap {
+      pointer-events: auto; position: relative; display: flex; gap: 6px;
+    }
+    .map-search-input-box {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      background: var(--glass); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 0 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .map-search-input {
+      flex: 1; background: transparent; border: none; padding: 10px 0; font-size: 13px; color: #fff;
+    }
+    .map-search-results {
+      pointer-events: auto; background: rgba(15, 21, 36, 0.96); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 14px; max-height: 210px; overflow-y: auto;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.55);
+    }
+    .map-search-item {
+      padding: 10px 13px; border-bottom: 1px solid var(--border); font-size: 12.5px;
+      display: flex; align-items: center; gap: 9px; cursor: pointer;
+    }
+    .map-search-item:last-child { border-bottom: none; }
+    .map-search-item:hover { background: rgba(99,102,241,0.16); }
+
+    .map-stats-row {
       display: flex; justify-content: space-between; align-items: center; pointer-events: none;
     }
     .map-stat-pill {
       pointer-events: auto; background: var(--glass); backdrop-filter: blur(12px);
-      border: 1px solid var(--border); padding: 7px 12px; border-radius: 999px;
-      font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+      border: 1px solid var(--border); padding: 6.5px 12px; border-radius: 999px;
+      font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 7px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.35);
     }
+
+    #pinModeBanner {
+      pointer-events: auto; background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      border-radius: 14px; padding: 9px 13px; font-size: 12.5px; font-weight: 700;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      box-shadow: 0 10px 24px rgba(236,72,153,0.4); animation: popIn 0.2s ease;
+    }
+
     .map-fab-stack { position: absolute; right: 14px; bottom: 18px; z-index: 450; display: flex; flex-direction: column; gap: 10px; }
     .map-fab {
-      width: 45px; height: 45px; border-radius: 50%; border: 1px solid var(--border);
+      width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16);
       background: var(--glass); backdrop-filter: blur(12px); color: #fff; font-size: 16px;
-      display: grid; place-items: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      display: grid; place-items: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.45);
     }
+    .map-fab.active-pin { background: var(--primary-2); border-color: #fff; }
 
     .custom-user-pin { position: relative; display: flex; flex-direction: column; align-items: center; }
     .pin-avatar-ring {
@@ -345,11 +439,6 @@
       background: var(--offline); box-shadow: 0 6px 16px rgba(0,0,0,0.55); position: relative;
     }
     .pin-avatar-ring.online { background: linear-gradient(135deg, #22c55e, #22d3ee); animation: pulsePin 2.2s infinite; }
-    @keyframes pulsePin {
-      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
-      70% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-    }
     .pin-avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #090d16; background: #1e293b; }
     .pin-mood {
       position: absolute; top: -6px; right: -6px; width: 22px; height: 22px;
@@ -357,9 +446,9 @@
       display: grid; place-items: center; font-size: 12px;
     }
     .pin-label {
-      margin-top: 3px; background: rgba(9, 13, 22, 0.9); border: 1px solid rgba(255,255,255,0.16);
+      margin-top: 3px; background: rgba(9, 13, 22, 0.92); border: 1px solid rgba(255,255,255,0.18);
       color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px;
-      white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; max-width: 115px; overflow: hidden; text-overflow: ellipsis;
     }
 
     /* ================= CHATS LIST VIEW ================= */
@@ -367,6 +456,7 @@
       display: flex; align-items: center; gap: 12px; padding: 12px;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 16px; margin-bottom: 10px; cursor: pointer;
+      animation: fadeSlideUp 0.24s ease both;
     }
     .chat-row-info { flex: 1; min-width: 0; }
     .chat-row-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -374,28 +464,92 @@
     .chat-row-last { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
     .unread-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary-2); flex-shrink: 0; }
 
-    /* ================= PROFILE TAB VIEW ================= */
-    .profile-top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .profile-hero-card {
-      background: linear-gradient(145deg, rgba(99,102,241,0.14), rgba(236,72,153,0.08));
-      border: 1px solid var(--border); border-radius: 22px; padding: 18px;
-      display: flex; align-items: center; gap: 15px; margin-bottom: 16px;
+    /* ================= SOCIAL MEDIA STYLE PROFILE TAB ================= */
+    #profileView { padding: 0 0 28px; }
+
+    .social-cover {
+      height: 112px;
+      background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #ec4899 100%);
+      position: relative;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
     }
-    .profile-avatar-edit-wrap { position: relative; width: 76px; height: 76px; flex-shrink: 0; }
-    .profile-avatar-edit-wrap img {
-      width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);
+    .social-cover::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 30%, var(--bg) 100%);
+      pointer-events: none;
     }
-    .avatar-upload-badge {
-      position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px;
-      border-radius: 50%; border: 2px solid var(--bg); background: var(--primary-2);
-      color: #fff; display: grid; place-items: center; font-size: 12px; cursor: pointer;
+    .cover-top-btn {
+      position: relative; z-index: 2;
+      background: rgba(9, 13, 22, 0.52); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2); color: #fff;
+      height: 36px; padding: 0 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
     }
 
-    .settings-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 15px; margin-bottom: 14px;
+    .social-profile-body { padding: 0 16px; position: relative; z-index: 3; margin-top: -50px; }
+
+    .social-avatar-center {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
     }
-    .settings-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #e2e8f0; display: flex; align-items: center; gap: 7px; }
+    .social-avatar-ring {
+      position: relative; width: 98px; height: 98px; border-radius: 50%; padding: 3px;
+      background: linear-gradient(135deg, var(--accent), var(--primary), var(--primary-2));
+      box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+    }
+    .social-avatar-ring img {
+      width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+      border: 3px solid var(--bg); background: var(--surface-2);
+    }
+    .avatar-crop-trigger {
+      position: absolute; bottom: 0; right: 0; width: 32px; height: 32px;
+      border-radius: 50%; border: 2.5px solid var(--bg);
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff; display: grid; place-items: center; font-size: 13px; cursor: pointer;
+    }
+    .avatar-mood-float {
+      position: absolute; top: -2px; left: -2px; width: 30px; height: 30px;
+      border-radius: 50%; background: var(--surface); border: 2px solid var(--bg);
+      display: grid; place-items: center; font-size: 15px;
+    }
+
+    .social-name { font-size: 20px; font-weight: 800; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+    .social-place { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+    .social-bio { font-size: 13px; color: var(--muted); margin-top: 5px; max-width: 310px; line-height: 1.45; }
+
+    .social-stats-bar {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 12px 8px; margin: 16px 0 14px; text-align: center;
+    }
+    .stat-col { border-right: 1px solid var(--border); }
+    .stat-col:last-child { border-right: none; }
+    .stat-val { font-size: 16px; font-weight: 800; color: #fff; }
+    .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+
+    .social-action-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+    }
+    .social-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 14px; margin-bottom: 12px;
+    }
+    .social-card-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    }
+    .social-card-head h3 { font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
+
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .about-tile {
+      background: rgba(255,255,255,0.035); border: 1px solid var(--border);
+      border-radius: 13px; padding: 9px 11px;
+    }
+    .about-tile-top { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); }
+    .about-tile-val { font-size: 13.5px; font-weight: 700; margin-top: 3px; }
 
     .personal-field-row {
       display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
@@ -445,7 +599,7 @@
       border: none; background: transparent; color: var(--muted);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 3px; height: 50px; border-radius: 14px; cursor: pointer;
-      font-size: 11px; font-weight: 700; position: relative; transition: 0.2s;
+      font-size: 11px; font-weight: 700; position: relative;
     }
     .nav-btn i { font-size: 18px; }
     .nav-btn.active { color: #fff; background: rgba(99, 102, 241, 0.16); }
@@ -462,6 +616,7 @@
     #chatOverlay {
       position: fixed; inset: 0; z-index: 1500; background: var(--bg);
       display: flex; flex-direction: column; height: 100dvh;
+      animation: fadeSlideUp 0.22s ease;
     }
     .chat-header {
       min-height: 62px; padding: 8px 10px; background: var(--surface);
@@ -477,7 +632,7 @@
       background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.06), transparent 45%), var(--bg);
     }
 
-    .msg-row { display: flex; flex-direction: column; max-width: 82%; }
+    .msg-row { display: flex; flex-direction: column; max-width: 82%; animation: fadeSlideUp 0.18s ease; }
     .msg-row.me { align-self: flex-end; align-items: flex-end; }
     .msg-row.them { align-self: flex-start; align-items: flex-start; }
 
@@ -508,9 +663,7 @@
     }
     .view-once-pill.opened { opacity: 0.55; font-weight: 500; }
 
-    .voice-player {
-      display: flex; align-items: center; gap: 10px; min-width: 195px; padding: 4px 2px;
-    }
+    .voice-player { display: flex; align-items: center; gap: 10px; min-width: 195px; padding: 4px 2px; }
     .voice-play-btn {
       width: 34px; height: 34px; border-radius: 50%; border: none;
       background: rgba(255,255,255,0.2); color: #fff; display: grid; place-items: center;
@@ -564,6 +717,7 @@
       position: fixed; inset: 0; z-index: 1700;
       background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(6px);
       display: flex; align-items: flex-end; justify-content: center;
+      animation: fadeIn 0.18s ease;
     }
     .modal-backdrop.center { align-items: center; padding: 16px; }
 
@@ -571,14 +725,13 @@
       width: 100%; max-width: 480px; max-height: 88dvh; overflow-y: auto;
       background: var(--surface); border-top-left-radius: 26px; border-top-right-radius: 26px;
       border: 1px solid var(--border); padding: 16px 18px 24px;
-      animation: slideUp 0.22s ease-out;
+      animation: slideUpSheet 0.24s cubic-bezier(.22,1,.36,1);
     }
     .dialog-card {
       width: 100%; max-width: 420px; max-height: 86dvh; overflow-y: auto;
       background: var(--surface); border-radius: 22px; border: 1px solid var(--border);
-      padding: 18px;
+      padding: 18px; animation: popIn 0.22s ease;
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .sheet-handle { width: 40px; height: 4.5px; border-radius: 99px; background: rgba(255,255,255,0.2); margin: 0 auto 14px; }
 
     .menu-item {
@@ -589,19 +742,26 @@
     }
     .menu-item.danger { color: #f87171; border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.08); }
 
-    /* ================= PHOTO CROPPER & VIEW ONCE MODAL ================= */
+    /* ================= PHOTO CROPPER (CHAT + PROFILE AVATAR) ================= */
     #photoEditorModal {
       position: fixed; inset: 0; z-index: 1900; background: #05070d;
       display: flex; flex-direction: column; height: 100dvh;
+      animation: fadeIn 0.2s ease;
     }
     .crop-stage {
       flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 12px; overflow: hidden; touch-action: none; position: relative;
+      padding: 16px; overflow: hidden; touch-action: none; position: relative;
+    }
+    .crop-canvas-wrap {
+      position: relative; display: inline-flex; align-items: center; justify-content: center;
     }
     #cropCanvas {
       border-radius: 14px; border: 2px solid rgba(255,255,255,0.35);
       box-shadow: 0 12px 40px rgba(0,0,0,0.7); max-width: 100%; max-height: 100%;
-      touch-action: none; cursor: grab;
+      touch-action: none; cursor: grab; display: block;
+    }
+    #cropCanvas.avatar-circle-preview {
+      border-radius: 50%; border: 3px solid var(--primary-2);
     }
     .crop-controls {
       background: var(--surface); border-top: 1px solid var(--border);
@@ -616,11 +776,17 @@
     }
     #viewOnceViewer img { max-width: 100%; max-height: 80dvh; border-radius: 14px; user-select: none; -webkit-user-drag: none; }
 
-    .empty-state { text-align: center; padding: 44px 18px; color: var(--muted); font-size: 13.5px; }
+    .empty-state { text-align: center; padding: 40px 18px; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
     .empty-state i { font-size: 36px; margin-bottom: 10px; opacity: 0.5; display: block; }
   </style>
 </head>
 <body>
+
+  <!-- Global Buffering Overlay -->
+  <div id="globalLoader" class="hidden">
+    <div class="spinner-ring"></div>
+    <div id="globalLoaderText" style="font-size:13px;font-weight:700;color:#e2e8f0;">Loading...</div>
+  </div>
 
   <div id="toast"></div>
 
@@ -669,7 +835,7 @@
       <div class="divider">OR</div>
 
       <button type="button" id="googleLoginBtn" class="btn-google">
-        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         Continue with Google
       </button>
 
@@ -689,7 +855,7 @@
         <div class="header-logo-mini">🤝</div>
         <div class="header-title-wrap">
           <h1>Make Friend</h1>
-          <span id="onlineCountBadge"><i class="fa-solid fa-circle" style="font-size:7px;"></i> 0 online</span>
+          <span id="onlineCountBadge"><i class="fa-solid fa-circle" style="font-size:7px;"></i> Syncing...</span>
         </div>
       </div>
 
@@ -713,28 +879,51 @@
 
       <!-- 1. HOME VIEW -->
       <section id="homeView" class="view-panel active">
-        <div class="filter-row" id="planFilterRow">
-          <button class="chip active" data-filter="all">All</button>
-          <button class="chip" data-filter="online">🟢 Online</button>
-          <button class="chip" data-filter="Travel & Ride">🏍️ Travel</button>
-          <button class="chip" data-filter="Food & Cafe">🍔 Food & Cafe</button>
-          <button class="chip" data-filter="Hangout">☕ Hangout</button>
-          <button class="chip" data-filter="Movies & Gaming">🎮 Games</button>
-          <button class="chip" data-filter="Make Friends">👋 Friends</button>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div class="filter-row" id="planFilterRow" style="flex:1;margin-bottom:0;">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="online">🟢 Online</button>
+            <button class="chip" data-filter="Travel & Ride">🏍️ Travel</button>
+            <button class="chip" data-filter="Food & Cafe">🍔 Food</button>
+            <button class="chip" data-filter="Hangout">☕ Hangout</button>
+            <button class="chip" data-filter="Movies & Gaming">🎮 Games</button>
+            <button class="chip" data-filter="Make Friends">👋 Friends</button>
+          </div>
+          <button class="icon-btn" id="refreshFeedBtn" type="button" title="Refresh Profiles" style="margin-bottom:10px;">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
         </div>
         <div id="homeFeedContainer"></div>
       </section>
 
-      <!-- 2. MAP VIEW -->
+      <!-- 2. MAP VIEW (100% FREE NO-KEY MAPS + SEARCH + PIN) -->
       <section id="mapView" class="view-panel">
-        <div class="map-overlay-top">
-          <div class="map-stat-pill">
-            <span>📍 Map IDs: <strong id="mapTotalCount">0</strong></span>
-            <span style="color:var(--online);">● <strong id="mapOnlineCount">0</strong></span>
+        <div class="map-top-stack">
+          <div class="map-search-wrap">
+            <div class="map-search-input-box">
+              <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);font-size:13px;"></i>
+              <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search city, area or place..." autocomplete="off" />
+              <button type="button" id="mapSearchGoBtn" style="border:none;background:transparent;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;">Go</button>
+            </div>
           </div>
-          <button class="map-stat-pill" id="toggleMapThemeBtn" type="button" style="cursor:pointer;">
-            <i class="fa-solid fa-layer-group"></i> <span id="mapThemeLabel">Dark</span>
-          </button>
+
+          <div id="mapSearchResults" class="map-search-results hidden"></div>
+
+          <div class="map-stats-row">
+            <div class="map-stat-pill">
+              <span>📍 IDs: <strong id="mapTotalCount">0</strong></span>
+              <span style="color:var(--online);">● <strong id="mapOnlineCount">0</strong></span>
+            </div>
+            <button class="map-stat-pill" id="toggleMapThemeBtn" type="button" style="cursor:pointer;">
+              <i class="fa-solid fa-layer-group" style="color:var(--accent);"></i>
+              <span id="mapThemeLabel">Street</span>
+            </button>
+          </div>
+
+          <div id="pinModeBanner" class="hidden">
+            <span>📍 Tap anywhere on map to drop your pin</span>
+            <button type="button" id="cancelPinModeBtn" style="border:none;background:rgba(0,0,0,0.3);color:#fff;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700;cursor:pointer;">Cancel</button>
+          </div>
         </div>
 
         <div id="map"></div>
@@ -755,143 +944,94 @@
         <div id="chatsListContainer"></div>
       </section>
 
-      <!-- 4. PROFILE TAB VIEW -->
+      <!-- 4. SOCIAL MEDIA STYLE PROFILE TAB -->
       <section id="profileView" class="view-panel">
-        <div class="profile-top-bar">
-          <h2 style="font-size:19px;font-weight:800;">My Profile</h2>
-          <button class="icon-btn" id="openComplianceMenuBtn" type="button" title="Account & Legal Menu">
-            <i class="fa-solid fa-ellipsis-vertical"></i>
+        <div class="social-cover">
+          <span class="cover-top-btn" id="profileGhostPill">
+            <i class="fa-solid fa-earth-asia" style="color:#4ade80;"></i> Visible on Map
+          </span>
+          <button class="cover-top-btn" id="openComplianceMenuBtn" type="button" title="Account & Settings Menu">
+            <i class="fa-solid fa-ellipsis-vertical"></i> Menu
           </button>
         </div>
 
-        <div class="profile-hero-card">
-          <div class="profile-avatar-edit-wrap">
-            <img id="profAvatarPreview" src="" alt="Profile Photo" />
-            <input type="file" id="avatarFileInput" accept="image/*" class="hidden" />
-            <button type="button" id="uploadAvatarBtn" class="avatar-upload-badge" title="Choose Photo from Gallery">
-              <i class="fa-solid fa-image"></i>
+        <div class="social-profile-body">
+          <div class="social-avatar-center">
+            <div class="social-avatar-ring">
+              <img id="profAvatarPreview" src="" alt="Profile Photo" />
+              <span id="profMoodFloat" class="avatar-mood-float">😎</span>
+              <input type="file" id="avatarFileInput" accept="image/*" class="hidden" />
+              <button type="button" id="uploadAvatarBtn" class="avatar-crop-trigger" title="Crop & Update Profile Photo">
+                <i class="fa-solid fa-camera-retro"></i>
+              </button>
+            </div>
+
+            <div class="social-name">
+              <span id="profDisplayName">Friend</span>
+              <i class="fa-solid fa-circle-check" style="color:var(--accent);font-size:15px;"></i>
+            </div>
+            <div class="social-place" id="profDisplayPlace">📍 Location not pinned yet</div>
+            <div class="social-bio" id="profDisplayBio">Looking to make new friends ✨</div>
+          </div>
+
+          <!-- Social Stats Bar -->
+          <div class="social-stats-bar">
+            <div class="stat-col">
+              <div class="stat-val" id="statImpressCount">0</div>
+              <div class="stat-lbl">Impressions</div>
+            </div>
+            <div class="stat-col">
+              <div class="stat-val" id="statChatsCount">0</div>
+              <div class="stat-lbl">Chats</div>
+            </div>
+            <div class="stat-col">
+              <div class="stat-val" id="statMapStatus" style="color:var(--online);">Live</div>
+              <div class="stat-lbl">Map Pin</div>
+            </div>
+          </div>
+
+          <!-- Primary Social Action Buttons -->
+          <div class="social-action-row">
+            <button type="button" class="btn-primary" id="openEditDetailsModalBtn" style="padding:11px;">
+              <i class="fa-solid fa-pen"></i> Edit Profile
+            </button>
+            <button type="button" class="act-btn" id="openMoodPlanModalBtn" style="padding:11px;border-color:rgba(99,102,241,0.45);">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent);"></i> Mood & Plan
             </button>
           </div>
-          <div style="flex:1;min-width:0;">
-            <div id="profDisplayName" style="font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">User</div>
-            <div id="profDisplayEmail" style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-            <div style="font-size:11.5px;color:var(--accent);margin-top:4px;">Tap gallery icon to update photo</div>
-          </div>
-        </div>
 
-        <!-- Basic Info -->
-        <div class="settings-card">
-          <h3><i class="fa-solid fa-id-card" style="color:var(--primary);"></i> Basic Details</h3>
-          <div class="input-group">
-            <label>Display Name</label>
-            <input type="text" id="profNameInput" class="input-field" placeholder="Your name" />
-          </div>
-          <div class="input-group" style="margin-bottom:0;">
-            <label>Short Bio / City</label>
-            <input type="text" id="profBioInput" class="input-field" placeholder="e.g. Love traveling, food & new friends" />
-          </div>
-        </div>
-
-        <!-- Personal Info with Individual Show/Hide Privacy Toggles -->
-        <div class="settings-card">
-          <h3><i class="fa-solid fa-user-shield" style="color:var(--primary-2);"></i> Personal Info & Visibility</h3>
-          <p style="font-size:11.5px;color:var(--muted);margin:-6px 0 12px;">Use the switch next to each detail to show or hide it from other users.</p>
-
-          <div class="personal-field-row">
-            <div>
-              <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Gender</label>
-              <select id="profGenderInput" class="input-field" style="padding:8px 10px;">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Non-binary">Non-binary</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
+          <!-- Live Hangout Vibe Preview Card -->
+          <div class="social-card" id="myVibePreviewCard" style="cursor:pointer;">
+            <div class="social-card-head">
+              <h3><span id="vibePreviewEmoji">😎</span> Current Hangout Plan</h3>
+              <span class="plan-tag-pill" id="vibePreviewTag">Make Friends</span>
             </div>
-            <div class="vis-toggle-wrap">
-              <label class="switch"><input type="checkbox" id="showGenderToggle" checked /><span class="slider"></span></label>
-              <span id="lblShowGender">Public</span>
-            </div>
+            <p id="vibePreviewNote" style="font-size:13.5px;color:#e2e8f0;line-height:1.45;">Hey! Let's connect, chat, and hang out.</p>
           </div>
 
-          <div class="personal-field-row">
-            <div>
-              <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Age (Years)</label>
-              <input type="number" id="profAgeInput" class="input-field" style="padding:8px 10px;" placeholder="e.g. 22" min="13" max="100" />
+          <!-- About Me Social Badges -->
+          <div class="social-card">
+            <div class="social-card-head">
+              <h3><i class="fa-solid fa-id-badge" style="color:var(--primary-2);"></i> About Me</h3>
+              <button type="button" id="editAboutQuickBtn" style="border:none;background:transparent;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">Edit</button>
             </div>
-            <div class="vis-toggle-wrap">
-              <label class="switch"><input type="checkbox" id="showAgeToggle" checked /><span class="slider"></span></label>
-              <span id="lblShowAge">Public</span>
-            </div>
+            <div class="about-grid" id="profileAboutGrid"></div>
           </div>
 
-          <div class="personal-field-row">
-            <div>
-              <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Height (e.g. 5'8" or 173 cm)</label>
-              <input type="text" id="profHeightInput" class="input-field" style="padding:8px 10px;" placeholder="e.g. 5'8&quot; / 173 cm" />
+          <!-- Quick Controls -->
+          <div class="social-card">
+            <div class="social-card-head" style="margin-bottom:8px;">
+              <h3><i class="fa-solid fa-sliders" style="color:var(--accent);"></i> Quick Privacy</h3>
             </div>
-            <div class="vis-toggle-wrap">
-              <label class="switch"><input type="checkbox" id="showHeightToggle" /><span class="slider"></span></label>
-              <span id="lblShowHeight">Hidden</span>
-            </div>
-          </div>
-
-          <div class="personal-field-row" style="margin-bottom:0;">
-            <div>
-              <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Weight (e.g. 65 kg)</label>
-              <input type="text" id="profWeightInput" class="input-field" style="padding:8px 10px;" placeholder="e.g. 65 kg" />
-            </div>
-            <div class="vis-toggle-wrap">
-              <label class="switch"><input type="checkbox" id="showWeightToggle" /><span class="slider"></span></label>
-              <span id="lblShowWeight">Hidden</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+              <div>
+                <div style="font-size:13px;font-weight:700;">👻 Ghost Mode</div>
+                <div style="font-size:11px;color:var(--muted);">Hide your pin from the live map</div>
+              </div>
+              <label class="switch"><input type="checkbox" id="quickGhostToggle" /><span class="slider"></span></label>
             </div>
           </div>
         </div>
-
-        <!-- Mood & Hangout Plan -->
-        <div class="settings-card">
-          <h3><i class="fa-solid fa-sparkles" style="color:var(--accent);"></i> Mood & Hangout Plan</h3>
-          <div class="emoji-grid" id="moodEmojiGrid">
-            <button type="button" class="emoji-opt" data-emoji="😎">😎</button>
-            <button type="button" class="emoji-opt" data-emoji="🥳">🥳</button>
-            <button type="button" class="emoji-opt" data-emoji="🥰">🥰</button>
-            <button type="button" class="emoji-opt" data-emoji="🏍️">🏍️</button>
-            <button type="button" class="emoji-opt" data-emoji="🍔">🍔</button>
-            <button type="button" class="emoji-opt" data-emoji="☕">☕</button>
-            <button type="button" class="emoji-opt" data-emoji="🎮">🎮</button>
-            <button type="button" class="emoji-opt" data-emoji="🎬">🎬</button>
-            <button type="button" class="emoji-opt" data-emoji="😴">😴</button>
-            <button type="button" class="emoji-opt" data-emoji="🎵">🎵</button>
-            <button type="button" class="emoji-opt" data-emoji="😂">😂</button>
-            <button type="button" class="emoji-opt" data-emoji="👋">👋</button>
-          </div>
-
-          <div class="plan-grid" id="planTagGrid">
-            <button type="button" class="plan-opt" data-plan="Travel & Ride">🏍️ Travel & Ride</button>
-            <button type="button" class="plan-opt" data-plan="Food & Cafe">🍔 Food & Cafe</button>
-            <button type="button" class="plan-opt" data-plan="Hangout">☕ Hangout</button>
-            <button type="button" class="plan-opt" data-plan="Movies & Gaming">🎮 Movies & Gaming</button>
-            <button type="button" class="plan-opt" data-plan="Make Friends">👋 Make Friends</button>
-            <button type="button" class="plan-opt" data-plan="Chill Time">✨ Chill Time</button>
-          </div>
-
-          <div class="input-group">
-            <label>Plan Note</label>
-            <input type="text" id="profPlanNoteInput" class="input-field" placeholder="e.g. Going for coffee at 5 PM, anyone up?" />
-          </div>
-
-          <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:13px;">
-            <div>
-              <div style="font-size:13px;font-weight:700;">👻 Ghost Mode</div>
-              <div style="font-size:11px;color:var(--muted);">Hide your pin from the live map</div>
-            </div>
-            <label class="switch"><input type="checkbox" id="profGhostToggle" /><span class="slider"></span></label>
-          </div>
-        </div>
-
-        <button type="button" id="saveProfileBtn" class="btn-primary" style="margin-bottom:10px;">
-          <i class="fa-solid fa-check"></i> Save Profile Changes
-        </button>
       </section>
 
     </main>
@@ -918,6 +1058,124 @@
     </nav>
   </div>
 
+  <!-- ================= EDIT PROFILE DETAILS SHEET (CLEAN MODAL) ================= -->
+  <div id="editDetailsModal" class="modal-backdrop hidden">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h3 style="font-size:17px;font-weight:800;">✏️ Edit Profile & Privacy</h3>
+        <button class="icon-btn" id="closeEditDetailsBtn" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="input-group">
+        <label>Display Name</label>
+        <input type="text" id="profNameInput" class="input-field" placeholder="Your name" />
+      </div>
+      <div class="input-group">
+        <label>Bio</label>
+        <input type="text" id="profBioInput" class="input-field" placeholder="e.g. Love traveling, food & new friends" />
+      </div>
+
+      <p style="font-size:11.5px;color:var(--muted);margin:10px 0 8px;">Toggle each switch to show (Public) or hide (Private) on your profile:</p>
+
+      <div class="personal-field-row">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px;">Gender</label>
+          <select id="profGenderInput" class="input-field" style="padding:8px 10px;">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+        <div class="vis-toggle-wrap">
+          <label class="switch"><input type="checkbox" id="showGenderToggle" checked /><span class="slider"></span></label>
+          <span id="lblShowGender">Public</span>
+        </div>
+      </div>
+
+      <div class="personal-field-row">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px;">Age (Years)</label>
+          <input type="number" id="profAgeInput" class="input-field" style="padding:8px 10px;" placeholder="e.g. 22" min="13" max="100" />
+        </div>
+        <div class="vis-toggle-wrap">
+          <label class="switch"><input type="checkbox" id="showAgeToggle" checked /><span class="slider"></span></label>
+          <span id="lblShowAge">Public</span>
+        </div>
+      </div>
+
+      <div class="personal-field-row">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px;">Height</label>
+          <input type="text" id="profHeightInput" class="input-field" style="padding:8px 10px;" placeholder="e.g. 5'8&quot; / 173 cm" />
+        </div>
+        <div class="vis-toggle-wrap">
+          <label class="switch"><input type="checkbox" id="showHeightToggle" /><span class="slider"></span></label>
+          <span id="lblShowHeight">Hidden</span>
+        </div>
+      </div>
+
+      <div class="personal-field-row">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px;">Weight</label>
+          <input type="text" id="profWeightInput" class="input-field" style="padding:8px 10px;" placeholder="e.g. 65 kg" />
+        </div>
+        <div class="vis-toggle-wrap">
+          <label class="switch"><input type="checkbox" id="showWeightToggle" /><span class="slider"></span></label>
+          <span id="lblShowWeight">Hidden</span>
+        </div>
+      </div>
+
+      <button type="button" id="saveDetailsBtn" class="btn-primary" style="margin-top:6px;">Save Profile</button>
+    </div>
+  </div>
+
+  <!-- ================= MOOD & HANGOUT PLAN SHEET ================= -->
+  <div id="moodPlanModal" class="modal-backdrop hidden">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h3 style="font-size:17px;font-weight:800;">✨ Update Mood & Plan</h3>
+        <button class="icon-btn" id="closeMoodPlanBtn" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Choose Your Mood</label>
+      <div class="emoji-grid" id="moodEmojiGrid">
+        <button type="button" class="emoji-opt" data-emoji="😎">😎</button>
+        <button type="button" class="emoji-opt" data-emoji="🥳">🥳</button>
+        <button type="button" class="emoji-opt" data-emoji="🥰">🥰</button>
+        <button type="button" class="emoji-opt" data-emoji="🏍️">🏍️</button>
+        <button type="button" class="emoji-opt" data-emoji="🍔">🍔</button>
+        <button type="button" class="emoji-opt" data-emoji="☕">☕</button>
+        <button type="button" class="emoji-opt" data-emoji="🎮">🎮</button>
+        <button type="button" class="emoji-opt" data-emoji="🎬">🎬</button>
+        <button type="button" class="emoji-opt" data-emoji="😴">😴</button>
+        <button type="button" class="emoji-opt" data-emoji="🎵">🎵</button>
+        <button type="button" class="emoji-opt" data-emoji="😂">😂</button>
+        <button type="button" class="emoji-opt" data-emoji="👋">👋</button>
+      </div>
+
+      <label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Select Hangout Activity</label>
+      <div class="plan-grid" id="planTagGrid">
+        <button type="button" class="plan-opt" data-plan="Travel & Ride">🏍️ Travel & Ride</button>
+        <button type="button" class="plan-opt" data-plan="Food & Cafe">🍔 Food & Cafe</button>
+        <button type="button" class="plan-opt" data-plan="Hangout">☕ Hangout</button>
+        <button type="button" class="plan-opt" data-plan="Movies & Gaming">🎮 Movies & Gaming</button>
+        <button type="button" class="plan-opt" data-plan="Make Friends">👋 Make Friends</button>
+        <button type="button" class="plan-opt" data-plan="Chill Time">✨ Chill Time</button>
+      </div>
+
+      <div class="input-group">
+        <label>Plan Note</label>
+        <input type="text" id="profPlanNoteInput" class="input-field" placeholder="e.g. Going for coffee at 5 PM, anyone up?" />
+      </div>
+
+      <button type="button" id="saveMoodPlanBtn" class="btn-primary">Update Vibe</button>
+    </div>
+  </div>
+
   <!-- ================= ADVANCED FULLSCREEN CHAT OVERLAY ================= -->
   <div id="chatOverlay" class="hidden">
     <div class="chat-header">
@@ -937,7 +1195,6 @@
 
     <div class="chat-messages" id="chatMessagesBox"></div>
 
-    <!-- Live Typing Indicator -->
     <div id="typingIndicatorBar" class="hidden">
       <div class="typing-dots"><span></span><span></span><span></span></div>
       <span id="typingIndicatorText">typing...</span>
@@ -950,10 +1207,9 @@
       <button class="ice-chip" type="button" data-ice="Let's be friends! 😊">😊 Be friends?</button>
     </div>
 
-    <!-- Gallery-only file input (NO camera capture attribute) -->
+    <!-- Gallery-only file input -->
     <input type="file" id="chatGalleryInput" accept="image/*" class="hidden" />
 
-    <!-- Standard Input Bar -->
     <form class="chat-input-bar" id="chatForm">
       <button class="icon-btn" id="chatGalleryBtn" type="button" title="Send Photo from Gallery">
         <i class="fa-solid fa-images"></i>
@@ -967,7 +1223,6 @@
       </button>
     </form>
 
-    <!-- Voice Recording Bar -->
     <div class="chat-input-bar hidden" id="voiceRecBar">
       <button class="icon-btn" id="cancelVoiceBtn" type="button" style="color:#f87171;" title="Cancel">
         <i class="fa-solid fa-trash"></i>
@@ -984,21 +1239,24 @@
     </div>
   </div>
 
-  <!-- ================= PHOTO CROPPER & VIEW-ONCE EDITOR MODAL ================= -->
+  <!-- ================= UNIFIED PHOTO CROPPER (PROFILE AVATAR + CHAT PHOTOS) ================= -->
   <div id="photoEditorModal" class="hidden">
     <div class="chat-header" style="justify-content:space-between;">
       <button class="icon-btn" id="closeCropperBtn" type="button"><i class="fa-solid fa-xmark"></i></button>
-      <strong style="font-size:15px;">Crop & Edit Photo</strong>
+      <strong id="cropperHeaderTitle" style="font-size:15px;">Crop & Edit Photo</strong>
       <button class="act-btn" id="toggleViewOnceBtn" type="button" style="padding:6px 11px;border-radius:999px;font-size:12px;">
         🔒 1x View Once: OFF
       </button>
     </div>
 
     <div class="crop-stage">
-      <canvas id="cropCanvas" width="320" height="320"></canvas>
+      <div class="crop-canvas-wrap">
+        <canvas id="cropCanvas" width="320" height="320"></canvas>
+      </div>
     </div>
 
     <div class="crop-controls">
+      <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;">Drag photo to adjust • Use slider to zoom</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
         <i class="fa-solid fa-magnifying-glass-minus" style="color:var(--muted);font-size:12px;"></i>
         <input type="range" id="cropZoomSlider" min="1" max="3" step="0.05" value="1" style="flex:1;accent-color:var(--primary);" />
@@ -1009,10 +1267,10 @@
       </div>
 
       <div class="crop-tools-row">
-        <button class="chip active" data-aspect="1">1:1 Square</button>
-        <button class="chip" data-aspect="0.8">4:5 Portrait</button>
-        <button class="chip" data-aspect="1.33">4:3 Landscape</button>
-        <button class="chip" data-filter="none">Normal</button>
+        <button class="chip active crop-aspect-chip" data-aspect="1">1:1 Square</button>
+        <button class="chip crop-aspect-chip" data-aspect="0.8">4:5 Portrait</button>
+        <button class="chip crop-aspect-chip" data-aspect="1.33">4:3 Landscape</button>
+        <button class="chip active" data-filter="none">Normal</button>
         <button class="chip" data-filter="contrast(1.15) saturate(1.25)">Vivid</button>
         <button class="chip" data-filter="grayscale(1)">B&W</button>
         <button class="chip" data-filter="sepia(0.35) brightness(1.05)">Warm</button>
@@ -1020,7 +1278,7 @@
 
       <div style="display:flex;gap:8px;margin-top:4px;">
         <input type="text" id="cropCaptionInput" class="chat-input" placeholder="Add a caption (optional)..." />
-        <button class="btn-primary" id="confirmSendPhotoBtn" type="button" style="width:auto;padding:0 18px;border-radius:999px;">
+        <button class="btn-primary" id="confirmSendPhotoBtn" type="button" style="width:auto;flex-shrink:0;padding:0 20px;border-radius:999px;">
           <i class="fa-solid fa-paper-plane"></i> Send
         </button>
       </div>
@@ -1105,7 +1363,7 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Main Unified Firebase, Notification & App Module -->
+  <!-- Unified, Play-Safe App Module -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -1137,12 +1395,10 @@
       limitToLast
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // ==================== APP & SERVICE CONFIGURATION ====================
+    // ==================== CONFIG ====================
     const APP_NAME = "Make Friend";
     const SUPPORT_EMAIL = "support.makefriend@gmail.com";
-
-    // Google Apps Script Web App URL for Background OneSignal Push:
-    const PUSH_RELAY_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+    const PUSH_RELAY_URL = "https://script.google.com/macros/s/AKfycbySrB1gV_g7YdqLm89c_ZA203dnsLxBPGtK22Hq2ber8GLn7WMDOMcIrq3EXSM3QBfUDQ/exec";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDBWfIOIMwkFhlOkyuYd5_X7hX6TdrVFrA",
@@ -1162,12 +1418,16 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Hoisted DOM helper (prevents ReferenceError anywhere in file)
     function $(id) {
       return document.getElementById(id);
     }
 
-    // ==================== MODERN SOUND ENGINE (WEB AUDIO API) ====================
+    function setLoading(show, text = "Loading...") {
+      $("globalLoaderText").textContent = text;
+      $("globalLoader").classList.toggle("hidden", !show);
+    }
+
+    // ==================== MODERN SOUND ENGINE ====================
     let soundEnabled = localStorage.getItem("mf_sound") !== "off";
     let audioCtx = null;
 
@@ -1238,145 +1498,21 @@
       }
     };
 
-    // ==================== IN-APP + BACKGROUND PUSH NOTIFICATION ENGINE ====================
-    let notifBannerTimer = null;
-    let notifClickHandler = null;
-    let notifHistory = [];
-
-    window.MakeFriendNotify = {
-      show({ title, body, avatar, onClick, playSound = true }) {
-        if (playSound) SoundFX.incoming();
-        $("notifTitle").textContent = title || APP_NAME;
-        $("notifText").textContent = body || "";
-        $("notifAvatar").src = avatar || defaultAvatar(title || "MF");
-        notifClickHandler = onClick || null;
-        $("inAppNotifBanner").classList.add("show");
-        clearTimeout(notifBannerTimer);
-        notifBannerTimer = setTimeout(() => {
-          $("inAppNotifBanner").classList.remove("show");
-        }, 4200);
-      },
-      attachUserListener(uid) {
-        const nRef = query(ref(db, `${DB_ROOT}/notifications/${uid}`), limitToLast(25));
-        let firstLoad = true;
-        let lastAlertedId = null;
-
-        onValue(nRef, (snap) => {
-          const val = snap.val() || {};
-          notifHistory = Object.entries(val)
-            .map(([id, item]) => ({ id, ...item }))
-            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-          const hasUnread = notifHistory.some((n) => !n.read);
-          $("bellUnreadDot").classList.toggle("hidden", !hasUnread);
-
-          if (firstLoad) {
-            firstLoad = false;
-            if (notifHistory[0]) lastAlertedId = notifHistory[0].id;
-            return;
-          }
-
-          const latest = notifHistory[0];
-          if (latest && !latest.read && latest.id !== lastAlertedId) {
-            lastAlertedId = latest.id;
-            this.show({
-              title: latest.title || APP_NAME,
-              body: latest.body || "You have a new notification!",
-              avatar: latest.avatar || defaultAvatar(latest.peerUid || "notif"),
-              onClick: () => {
-                if (latest.peerUid) window.startDirectChat(latest.peerUid);
-              }
-            });
-          }
-        });
-      }
-    };
-
-    $("inAppNotifBanner").addEventListener("click", () => {
-      $("inAppNotifBanner").classList.remove("show");
-      if (typeof notifClickHandler === "function") notifClickHandler();
-    });
-
-    function triggerBackgroundPush(targetUid, title, body) {
-      if (!targetUid || !currentUser || targetUid === currentUser.uid) return;
-      if (!PUSH_RELAY_URL || !PUSH_RELAY_URL.startsWith("https://")) return;
-
-      fetch(PUSH_RELAY_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({
-          targetUid,
-          senderUid: currentUser.uid,
-          title,
-          body
-        })
-      }).catch(() => {});
-    }
-
-    async function sendActivityNotification(targetUid, title, body) {
-      if (!targetUid || !currentUser || targetUid === currentUser.uid) return;
-      await push(ref(db, `${DB_ROOT}/notifications/${targetUid}`), {
-        title,
-        body,
-        avatar: myProfile?.photoURL || defaultAvatar(currentUser.uid),
-        peerUid: currentUser.uid,
-        read: false,
-        timestamp: Date.now()
-      }).catch(() => {});
-
-      triggerBackgroundPush(targetUid, title, body);
-    }
-
-    // Notification Bell & History Modal
-    $("notifBellBtn").addEventListener("click", () => {
-      $("bellUnreadDot").classList.add("hidden");
-      renderNotifHistory();
-      $("notifHistoryModal").classList.remove("hidden");
-      if (currentUser) {
-        notifHistory.forEach((n) => {
-          if (!n.read) {
-            update(ref(db, `${DB_ROOT}/notifications/${currentUser.uid}/${n.id}`), { read: true }).catch(() => {});
-          }
-        });
-      }
-    });
-    $("closeNotifHistoryBtn").addEventListener("click", () => $("notifHistoryModal").classList.add("hidden"));
-    $("notifHistoryModal").addEventListener("click", (e) => {
-      if (e.target === $("notifHistoryModal")) $("notifHistoryModal").classList.add("hidden");
-    });
-
-    function renderNotifHistory() {
-      const box = $("notifHistoryList");
-      if (notifHistory.length === 0) {
-        box.innerHTML = `<div class="empty-state" style="padding:30px 10px;"><i class="fa-regular fa-bell-slash"></i>No notifications yet.</div>`;
-        return;
-      }
-      box.innerHTML = notifHistory.map((n) => `
-        <div class="chat-row" style="margin-bottom:8px;" onclick="document.getElementById('notifHistoryModal').classList.add('hidden');if('${escapeHtml(n.peerUid || "")}')window.startDirectChat('${escapeHtml(n.peerUid || "")}');">
-          <img src="${escapeHtml(n.avatar || defaultAvatar(n.peerUid || "mf"))}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);" />
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;justify-content:space-between;gap:6px;">
-              <strong style="font-size:13.5px;">${escapeHtml(n.title || APP_NAME)}</strong>
-              <span style="font-size:10.5px;color:var(--muted);">${formatShortTime(n.timestamp)}</span>
-            </div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${escapeHtml(n.body || "")}</div>
-          </div>
-        </div>
-      `).join("");
-    }
-
     // ==================== STATE ====================
     let currentUser = null;
     let myProfile = null;
     let allUsers = {};
+    let usersLoaded = false;
+    let usersLoadError = null;
     let activeFilter = "all";
     let isSignupMode = false;
+    let presenceHeartbeat = null;
+    let myChatsCount = 0;
 
     // Map state
     let map = null;
-    let mapTileLayer = null;
-    let mapThemeIndex = 0;
+    let mapBaseLayers = [];
+    let mapThemeIndex = 0; // 0: Street, 1: Dark, 2: Satellite + Labels
     let mapMarkers = {};
     let manualPinMode = false;
 
@@ -1400,7 +1536,11 @@
     // Profile selection state
     let selectedMoodEmoji = "😎";
     let selectedPlanTag = "Make Friends";
-    let uploadedAvatarUrl = "";
+
+    // Notification state
+    let notifBannerTimer = null;
+    let notifClickHandler = null;
+    let notifHistory = [];
 
     // ==================== HELPERS ====================
     function showToast(msg, duration = 2800) {
@@ -1429,7 +1569,6 @@
       const d = new Date(ts);
       const now = new Date();
       const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-
       const isToday = d.toDateString() === now.toDateString();
       const yest = new Date(now);
       yest.setDate(now.getDate() - 1);
@@ -1438,8 +1577,7 @@
       if (isToday) return `Last seen today at ${timeStr}`;
       if (isYesterday) return `Last seen yesterday at ${timeStr}`;
       const dateStr = d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
+        month: "short", day: "numeric",
         year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined
       });
       return `Last seen ${dateStr} at ${timeStr}`;
@@ -1480,6 +1618,146 @@
       return data.secure_url;
     }
 
+    async function reverseGeocode(lat, lng) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12&accept-language=en`);
+        if (!res.ok) return "";
+        const data = await res.json();
+        const a = data.address || {};
+        const city = a.city || a.town || a.village || a.suburb || a.county || a.state_district || "";
+        const state = a.state || "";
+        return [city, state].filter(Boolean).join(", ");
+      } catch {
+        return "";
+      }
+    }
+
+    function renderSkeletonFeed(count = 4) {
+      let html = "";
+      for (let i = 0; i < count; i++) {
+        html += `
+          <div class="skeleton-card">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="skel" style="width:54px;height:54px;border-radius:50%;flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div class="skel" style="height:14px;width:55%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:11px;width:82%;"></div>
+              </div>
+            </div>
+            <div class="skel" style="height:34px;width:100%;margin-top:12px;border-radius:12px;"></div>
+          </div>`;
+      }
+      return html;
+    }
+
+    // ==================== IN-APP + BACKGROUND NOTIFICATIONS ====================
+    window.MakeFriendNotify = {
+      show({ title, body, avatar, onClick, playSound = true }) {
+        if (playSound) SoundFX.incoming();
+        $("notifTitle").textContent = title || APP_NAME;
+        $("notifText").textContent = body || "";
+        $("notifAvatar").src = avatar || defaultAvatar(title || "MF");
+        notifClickHandler = onClick || null;
+        $("inAppNotifBanner").classList.add("show");
+        clearTimeout(notifBannerTimer);
+        notifBannerTimer = setTimeout(() => $("inAppNotifBanner").classList.remove("show"), 4200);
+      },
+      attachUserListener(uid) {
+        const nRef = query(ref(db, `${DB_ROOT}/notifications/${uid}`), limitToLast(25));
+        let firstLoad = true;
+        let lastAlertedId = null;
+
+        onValue(nRef, (snap) => {
+          const val = snap.val() || {};
+          notifHistory = Object.entries(val)
+            .map(([id, item]) => ({ id, ...item }))
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+          const hasUnread = notifHistory.some((n) => !n.read);
+          $("bellUnreadDot").classList.toggle("hidden", !hasUnread);
+
+          if (firstLoad) {
+            firstLoad = false;
+            if (notifHistory[0]) lastAlertedId = notifHistory[0].id;
+            return;
+          }
+
+          const latest = notifHistory[0];
+          if (latest && !latest.read && latest.id !== lastAlertedId) {
+            lastAlertedId = latest.id;
+            this.show({
+              title: latest.title || APP_NAME,
+              body: latest.body || "You have a new notification!",
+              avatar: latest.avatar || defaultAvatar(latest.peerUid || "notif"),
+              onClick: () => { if (latest.peerUid) window.startDirectChat(latest.peerUid); }
+            });
+          }
+        }, () => {});
+      }
+    };
+
+    $("inAppNotifBanner").addEventListener("click", () => {
+      $("inAppNotifBanner").classList.remove("show");
+      if (typeof notifClickHandler === "function") notifClickHandler();
+    });
+
+    function triggerBackgroundPush(targetUid, title, body) {
+      if (!targetUid || !currentUser || targetUid === currentUser.uid) return;
+      if (!PUSH_RELAY_URL || !PUSH_RELAY_URL.startsWith("https://")) return;
+      fetch(PUSH_RELAY_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ targetUid, senderUid: currentUser.uid, title, body })
+      }).catch(() => {});
+    }
+
+    async function sendActivityNotification(targetUid, title, body) {
+      if (!targetUid || !currentUser || targetUid === currentUser.uid) return;
+      await push(ref(db, `${DB_ROOT}/notifications/${targetUid}`), {
+        title, body,
+        avatar: myProfile?.photoURL || defaultAvatar(currentUser.uid),
+        peerUid: currentUser.uid,
+        read: false,
+        timestamp: Date.now()
+      }).catch(() => {});
+      triggerBackgroundPush(targetUid, title, body);
+    }
+
+    $("notifBellBtn").addEventListener("click", () => {
+      $("bellUnreadDot").classList.add("hidden");
+      renderNotifHistory();
+      $("notifHistoryModal").classList.remove("hidden");
+      if (currentUser) {
+        notifHistory.forEach((n) => {
+          if (!n.read) update(ref(db, `${DB_ROOT}/notifications/${currentUser.uid}/${n.id}`), { read: true }).catch(() => {});
+        });
+      }
+    });
+    $("closeNotifHistoryBtn").addEventListener("click", () => $("notifHistoryModal").classList.add("hidden"));
+    $("notifHistoryModal").addEventListener("click", (e) => {
+      if (e.target === $("notifHistoryModal")) $("notifHistoryModal").classList.add("hidden");
+    });
+
+    function renderNotifHistory() {
+      const box = $("notifHistoryList");
+      if (notifHistory.length === 0) {
+        box.innerHTML = `<div class="empty-state" style="padding:30px 10px;"><i class="fa-regular fa-bell-slash"></i>No notifications yet.</div>`;
+        return;
+      }
+      box.innerHTML = notifHistory.map((n) => `
+        <div class="chat-row" style="margin-bottom:8px;" onclick="document.getElementById('notifHistoryModal').classList.add('hidden');if('${escapeHtml(n.peerUid || "")}')window.startDirectChat('${escapeHtml(n.peerUid || "")}');">
+          <img src="${escapeHtml(n.avatar || defaultAvatar(n.peerUid || "mf"))}" loading="lazy" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);" />
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;gap:6px;">
+              <strong style="font-size:13.5px;">${escapeHtml(n.title || APP_NAME)}</strong>
+              <span style="font-size:10.5px;color:var(--muted);">${formatShortTime(n.timestamp)}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${escapeHtml(n.body || "")}</div>
+          </div>
+        </div>`).join("");
+    }
+
     // Sound Toggle
     function updateSoundIcon() {
       $("soundToggleBtn").innerHTML = soundEnabled
@@ -1496,10 +1774,6 @@
     });
 
     // ==================== AUTHENTICATION ====================
-    if (location.protocol === "file:") {
-      $("authHintText").innerHTML = "⚠️ Hosted on <b>file://</b>. Deploy to <b>GitHub Pages (https://)</b> for Google Login, Live GPS & Voice.";
-    }
-
     getRedirectResult(auth)
       .then((res) => { if (res && res.user) showToast("Welcome to Make Friend! 🎉"); })
       .catch((err) => { if (err && err.code) handleAuthError(err); });
@@ -1528,7 +1802,7 @@
       const btn = $("authSubmitBtn");
 
       btn.disabled = true;
-      btn.textContent = "Please wait...";
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Please wait...`;
       try {
         if (isSignupMode) {
           if (!name) {
@@ -1553,16 +1827,11 @@
     });
 
     $("googleLoginBtn").addEventListener("click", async () => {
-      if (location.protocol === "file:") {
-        showToast("Google Login requires HTTPS (GitHub Pages).", 4000);
-        return;
-      }
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
       const btn = $("googleLoginBtn");
       btn.disabled = true;
       const isMobileOrWebView = /Android|iPhone|iPad|wv/i.test(navigator.userAgent);
-
       try {
         await signInWithPopup(auth, provider);
         showToast("Signed in with Google! 🎉");
@@ -1597,29 +1866,46 @@
       }
     }
 
-    // ==================== AUTH STATE & REALTIME PRESENCE ====================
+    // ==================== AUTH STATE, PRESENCE & NON-BLOCKING SYNC ====================
     onAuthStateChanged(auth, async (user) => {
+      clearInterval(presenceHeartbeat);
       if (user) {
         currentUser = user;
+        usersLoaded = false;
+        usersLoadError = null;
         isInitialChatListLoad = true;
         knownChatTimestamps = {};
+
         $("authScreen").classList.add("hidden");
         $("appShell").classList.remove("hidden");
+        $("homeFeedContainer").innerHTML = renderSkeletonFeed(4);
+        $("chatsListContainer").innerHTML = renderSkeletonFeed(3);
 
-        // Link Sketchware Pro OneSignal SDK with Firebase UID
+        // Notify Sketchware Pro Android Bridge
         if (window.AndroidBridge && typeof window.AndroidBridge.loginUser === "function") {
-          window.AndroidBridge.loginUser(user.uid);
+          try { window.AndroidBridge.loginUser(user.uid); } catch {}
         }
 
-        await ensureUserProfile(user);
-        setupRealtimePresence(user.uid);
+        // Start listeners IMMEDIATELY so feed never gets stuck
         startUsersListener();
         startChatsListListener();
         window.MakeFriendNotify.attachUserListener(user.uid);
-        requestLiveLocation(false);
+
+        // Ensure profile in background safely
+        try {
+          await ensureUserProfile(user);
+          setupRealtimePresence(user.uid);
+          requestLiveLocation(false);
+        } catch (err) {
+          console.error("Profile init error:", err);
+          if (String(err.message || "").toLowerCase().includes("permission")) {
+            usersLoadError = "Firebase Realtime Database Rules blocked access. Please publish read/write rules for makeFriendsApp.";
+            renderHomeFeed();
+          }
+        }
       } else {
         if (window.AndroidBridge && typeof window.AndroidBridge.logoutUser === "function") {
-          window.AndroidBridge.logoutUser();
+          try { window.AndroidBridge.logoutUser(); } catch {}
         }
         currentUser = null;
         myProfile = null;
@@ -1652,19 +1938,24 @@
           moodEmoji: "😎",
           planTag: "Make Friends",
           planNote: "Hey! Let's connect, chat, and hang out.",
+          placeName: "",
           ghostMode: false,
           online: true,
-          lastSeen: serverTimestamp(),
-          lat: 22.5726 + (Math.random() - 0.5) * 0.05,
-          lng: 88.3639 + (Math.random() - 0.5) * 0.05
+          lastSeen: Date.now(),
+          lat: 22.5726 + (Math.random() - 0.5) * 0.04,
+          lng: 88.3639 + (Math.random() - 0.5) * 0.04
         };
         await set(userRef, initialProfile);
         myProfile = initialProfile;
       } else {
-        myProfile = existing;
-        await update(userRef, { online: true, lastSeen: serverTimestamp() });
+        myProfile = { ...existing, uid: user.uid };
+        await update(userRef, {
+          uid: user.uid,
+          online: true,
+          lastSeen: Date.now()
+        });
       }
-      syncMyProfileUI();
+      renderSocialProfileView();
     }
 
     function setupRealtimePresence(uid) {
@@ -1673,88 +1964,41 @@
       onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
           onDisconnect(userStatusRef).update({ online: false, lastSeen: serverTimestamp() });
-          update(userStatusRef, { online: true, lastSeen: serverTimestamp() });
+          update(userStatusRef, { online: true, lastSeen: Date.now() }).catch(() => {});
         }
       });
-    }
 
-    function syncMyProfileUI() {
-      if (!myProfile) return;
-      $("headerMoodEmoji").textContent = myProfile.moodEmoji || "😎";
-      $("headerPlanLabel").textContent = myProfile.planTag || "Set Plan";
-
-      uploadedAvatarUrl = myProfile.photoURL || defaultAvatar(myProfile.uid);
-      selectedMoodEmoji = myProfile.moodEmoji || "😎";
-      selectedPlanTag = myProfile.planTag || "Make Friends";
-
-      $("profAvatarPreview").src = uploadedAvatarUrl;
-      $("profDisplayName").textContent = myProfile.name || "Friend";
-      $("profDisplayEmail").textContent = myProfile.email || "";
-      $("profNameInput").value = myProfile.name || "";
-      $("profBioInput").value = myProfile.bio || "";
-      $("profGenderInput").value = myProfile.gender || "";
-      $("profAgeInput").value = myProfile.age || "";
-      $("profHeightInput").value = myProfile.height || "";
-      $("profWeightInput").value = myProfile.weight || "";
-      $("profPlanNoteInput").value = myProfile.planNote || "";
-      $("profGhostToggle").checked = Boolean(myProfile.ghostMode);
-
-      $("showGenderToggle").checked = myProfile.showGender !== false;
-      $("showAgeToggle").checked = myProfile.showAge !== false;
-      $("showHeightToggle").checked = Boolean(myProfile.showHeight);
-      $("showWeightToggle").checked = Boolean(myProfile.showWeight);
-      refreshVisibilityLabels();
-
-      document.querySelectorAll(".emoji-opt").forEach((b) => b.classList.toggle("selected", b.dataset.emoji === selectedMoodEmoji));
-      document.querySelectorAll(".plan-opt").forEach((b) => b.classList.toggle("selected", b.dataset.plan === selectedPlanTag));
-    }
-
-    function refreshVisibilityLabels() {
-      $("lblShowGender").textContent = $("showGenderToggle").checked ? "Public" : "Hidden";
-      $("lblShowAge").textContent = $("showAgeToggle").checked ? "Public" : "Hidden";
-      $("lblShowHeight").textContent = $("showHeightToggle").checked ? "Public" : "Hidden";
-      $("lblShowWeight").textContent = $("showWeightToggle").checked ? "Public" : "Hidden";
-    }
-    ["showGenderToggle", "showAgeToggle", "showHeightToggle", "showWeightToggle"].forEach((id) => {
-      $(id).addEventListener("change", refreshVisibilityLabels);
-    });
-
-    // ==================== LOCATION ENGINE ====================
-    function requestLiveLocation(showFeedback = true) {
-      if (!navigator.geolocation) {
-        if (showFeedback) showToast("GPS unavailable. Use the Pin button to place yourself on the map.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          if (currentUser) {
-            await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { lat, lng });
-            if (map) map.setView([lat, lng], 14, { animate: true });
-            if (showFeedback) showToast("Live location updated! 📍");
-          }
-        },
-        () => {
-          if (showFeedback) showToast("Allow GPS permission or tap the Pin icon to set your spot.", 3500);
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
+      // Keep presence fresh while active
+      clearInterval(presenceHeartbeat);
+      presenceHeartbeat = setInterval(() => {
+        if (currentUser && !document.hidden) {
+          update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { online: true, lastSeen: Date.now() }).catch(() => {});
+        }
+      }, 45000);
     }
 
     // ==================== USERS LISTENER ====================
-    let profilePopulatedOnce = false;
+    let usersListenerRef = null;
     function startUsersListener() {
-      onValue(ref(db, `${DB_ROOT}/users`), (snap) => {
-        allUsers = snap.val() || {};
+      if (usersListenerRef) off(usersListenerRef);
+      usersListenerRef = ref(db, `${DB_ROOT}/users`);
+
+      onValue(usersListenerRef, (snap) => {
+        const raw = snap.val() || {};
+        const normalized = {};
+        Object.entries(raw).forEach(([key, val]) => {
+          if (val && typeof val === "object") {
+            normalized[key] = { ...val, uid: val.uid || key };
+          }
+        });
+
+        allUsers = normalized;
+        usersLoaded = true;
+        usersLoadError = null;
+
         if (currentUser && allUsers[currentUser.uid]) {
           myProfile = allUsers[currentUser.uid];
-          $("headerMoodEmoji").textContent = myProfile.moodEmoji || "😎";
-          $("headerPlanLabel").textContent = myProfile.planTag || "Set Plan";
-          if (!profilePopulatedOnce) {
-            syncMyProfileUI();
-            profilePopulatedOnce = true;
-          }
+          renderSocialProfileView();
         }
         updateOnlineCounters();
         renderHomeFeed();
@@ -1762,8 +2006,24 @@
         if (activeChatPeerUid && allUsers[activeChatPeerUid]) {
           updateChatPeerHeader(allUsers[activeChatPeerUid]);
         }
+      }, (err) => {
+        console.error("Users listener error:", err);
+        usersLoaded = true;
+        usersLoadError = err.message || "Unable to load profiles from database.";
+        renderHomeFeed();
       });
     }
+
+    $("refreshFeedBtn").addEventListener("click", () => {
+      const icon = $("refreshFeedBtn").querySelector("i");
+      icon.classList.add("fa-spin");
+      $("homeFeedContainer").innerHTML = renderSkeletonFeed(4);
+      startUsersListener();
+      setTimeout(() => {
+        icon.classList.remove("fa-spin");
+        renderHomeFeed();
+      }, 650);
+    });
 
     function updateOnlineCounters() {
       const list = Object.values(allUsers);
@@ -1788,6 +2048,22 @@
 
     function renderHomeFeed() {
       const container = $("homeFeedContainer");
+      if (!usersLoaded) {
+        container.innerHTML = renderSkeletonFeed(4);
+        return;
+      }
+
+      if (usersLoadError) {
+        container.innerHTML = `
+          <div class="empty-state" style="background:var(--surface);border:1px solid rgba(239,68,68,0.35);border-radius:18px;margin-top:12px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#f87171;"></i>
+            <strong style="color:#fff;display:block;margin-bottom:6px;">Could not load profiles</strong>
+            <div style="font-size:12px;margin-bottom:14px;">${escapeHtml(usersLoadError)}</div>
+            <button type="button" class="btn-primary" style="max-width:180px;" onclick="document.getElementById('refreshFeedBtn').click()">Retry Now</button>
+          </div>`;
+        return;
+      }
+
       let usersList = Object.values(allUsers);
 
       if (activeFilter === "online") {
@@ -1802,7 +2078,11 @@
       });
 
       if (usersList.length === 0) {
-        container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-user-group"></i>No profiles match this filter yet.</div>`;
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-solid fa-user-group"></i>
+            No profiles match this filter yet.<br/>Try switching to <b>All</b> or refreshing.
+          </div>`;
         return;
       }
 
@@ -1812,27 +2092,28 @@
 
       if (onlineUsers.length > 0) {
         html += `<div class="section-label"><span>🟢 Online Now (${onlineUsers.length})</span></div>`;
-        html += onlineUsers.map((u) => buildProfileCardHtml(u)).join("");
+        html += onlineUsers.map((u, idx) => buildProfileCardHtml(u, idx)).join("");
       }
       if (offlineUsers.length > 0) {
         html += `<div class="section-label"><span>⚫ Offline (${offlineUsers.length})</span></div>`;
-        html += offlineUsers.map((u) => buildProfileCardHtml(u)).join("");
+        html += offlineUsers.map((u, idx) => buildProfileCardHtml(u, idx)).join("");
       }
       container.innerHTML = html;
     }
 
-    function buildProfileCardHtml(u) {
+    function buildProfileCardHtml(u, idx = 0) {
       const isMe = currentUser && u.uid === currentUser.uid;
       const dist = (!isMe && myProfile) ? calcDistanceKm(myProfile.lat, myProfile.lng, u.lat, u.lng) : null;
       const impressedByMe = u.impressedBy && currentUser && u.impressedBy[currentUser.uid];
       const impressCount = u.impressedBy ? Object.keys(u.impressedBy).length : 0;
       const pills = getPublicStatPills(u);
+      const locInfo = u.placeName ? `📍 ${escapeHtml(u.placeName)}` : (dist ? `📍 ${dist}` : "");
 
       return `
-        <article class="profile-card ${u.online ? "is-online" : ""}">
-          <div class="card-top" onclick="window.openUserProfile('${u.uid}')">
+        <article class="profile-card ${u.online ? "is-online" : ""}" style="animation-delay:${Math.min(idx * 45, 250)}ms;">
+          <div class="card-top" onclick="window.openUserProfile('${escapeHtml(u.uid)}')">
             <div class="avatar-wrap">
-              <img class="avatar-img" src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" alt="${escapeHtml(u.name)}" />
+              <img class="avatar-img lazy-img" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='${defaultAvatar(u.uid)}';this.classList.add('loaded');" src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" alt="${escapeHtml(u.name || "Friend")}" />
               <span class="mood-badge-mini">${escapeHtml(u.moodEmoji || "😎")}</span>
               <span class="status-dot"></span>
             </div>
@@ -1841,37 +2122,36 @@
                 <span class="user-name">${escapeHtml(u.name || "Friend")}${isMe ? " (You)" : ""}</span>
                 <span class="online-tag ${u.online ? "on" : "off"}">${u.online ? "Online" : formatShortTime(u.lastSeen)}</span>
               </div>
-              <div class="user-bio">${escapeHtml(u.bio || "Looking for new friends")}${dist ? ` • 📍 ${dist}` : ""}</div>
+              <div class="user-bio">${escapeHtml(u.bio || "Looking for new friends")}${locInfo ? ` • ${locInfo}` : ""}</div>
             </div>
           </div>
 
           ${pills.length ? `<div class="mini-stats-row">${pills.map(p => `<span class="mini-stat-pill">${p}</span>`).join("")}</div>` : ""}
 
-          <div class="plan-box" onclick="window.openUserProfile('${u.uid}')">
+          <div class="plan-box" onclick="window.openUserProfile('${escapeHtml(u.uid)}')">
             <span class="plan-tag-pill">${escapeHtml(u.planTag || "Make Friends")}</span>
             <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(u.planNote || "Let's hang out!")}</span>
           </div>
 
           ${isMe ? `
             <div class="card-actions" style="grid-template-columns:1fr 1fr;">
-              <button class="act-btn" onclick="window.switchTab('profileView')">✏️ Edit Profile</button>
-              <button class="act-btn" onclick="window.focusUserOnMap('${u.uid}')">📍 My Pin</button>
+              <button class="act-btn" onclick="window.switchTab('profileView')">✏️ My Profile</button>
+              <button class="act-btn" onclick="window.focusUserOnMap('${escapeHtml(u.uid)}')">📍 My Pin</button>
             </div>
           ` : `
             <div class="card-actions">
-              <button class="act-btn ${impressedByMe ? "impressed" : ""}" onclick="window.toggleImpress('${u.uid}')">
+              <button class="act-btn ${impressedByMe ? "impressed" : ""}" onclick="window.toggleImpress('${escapeHtml(u.uid)}')">
                 ${impressedByMe ? "💖 Impressed" : "✨ Impress"} (${impressCount})
               </button>
-              <button class="act-btn msg-btn" onclick="window.startDirectChat('${u.uid}')">
+              <button class="act-btn msg-btn" onclick="window.startDirectChat('${escapeHtml(u.uid)}')">
                 <i class="fa-solid fa-paper-plane"></i> Message
               </button>
-              <button class="act-btn" onclick="window.focusUserOnMap('${u.uid}')" title="Show on Map">
+              <button class="act-btn" onclick="window.focusUserOnMap('${escapeHtml(u.uid)}')" title="Show on Map">
                 <i class="fa-solid fa-location-dot"></i>
               </button>
             </div>
           `}
-        </article>
-      `;
+        </article>`;
     }
 
     $("planFilterRow").addEventListener("click", (e) => {
@@ -1883,16 +2163,33 @@
       renderHomeFeed();
     });
 
-    // ==================== 2. MAP ENGINE (NO API KEY NEEDED) ====================
+    // ==================== 2. 100% FREE MAP ENGINE (NO API KEY + SATELLITE LABELS + SEARCH + PIN) ====================
     const MAP_THEMES = [
-      { name: "Dark", url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" },
-      { name: "Light", url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" },
-      { name: "Satellite", url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" }
+      {
+        name: "Street",
+        isDark: false,
+        layers: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]
+      },
+      {
+        name: "Dark",
+        isDark: true,
+        layers: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]
+      },
+      {
+        name: "Satellite",
+        isDark: false,
+        layers: [
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+          "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+        ]
+      }
     ];
 
     function initMapIfNeeded() {
       if (map) {
         setTimeout(() => map.invalidateSize(), 120);
+        renderMapMarkers();
         return;
       }
       const startLat = myProfile?.lat || 22.5726;
@@ -1902,23 +2199,64 @@
 
       map.on("click", async (e) => {
         if (!manualPinMode || !currentUser) return;
-        manualPinMode = false;
-        $("setManualPinBtn").style.background = "";
-        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), {
-          lat: e.latlng.lat, lng: e.latlng.lng, ghostMode: false
-        });
-        showToast("Your map pin has been updated! 📍");
+        const { lat, lng } = e.latlng;
+        setManualPinMode(false);
+        await saveMyMapCoordinates(lat, lng, true);
       });
 
       renderMapMarkers();
-      setTimeout(() => map.invalidateSize(), 180);
+      setTimeout(() => map.invalidateSize(), 200);
     }
 
     function applyMapTiles() {
-      if (mapTileLayer) map.removeLayer(mapTileLayer);
+      mapBaseLayers.forEach((layer) => map.removeLayer(layer));
+      mapBaseLayers = [];
+
       const t = MAP_THEMES[mapThemeIndex];
       $("mapThemeLabel").textContent = t.name;
-      mapTileLayer = L.tileLayer(t.url, { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(map);
+      $("map").classList.toggle("dark-map-tiles", t.isDark);
+
+      t.layers.forEach((url) => {
+        const layer = L.tileLayer(url, { maxZoom: 19, attribution: "&copy; OpenStreetMap / Esri" }).addTo(map);
+        mapBaseLayers.push(layer);
+      });
+    }
+
+    function setManualPinMode(enabled) {
+      manualPinMode = enabled;
+      $("setManualPinBtn").classList.toggle("active-pin", enabled);
+      $("pinModeBanner").classList.toggle("hidden", !enabled);
+      $("map").style.cursor = enabled ? "crosshair" : "";
+    }
+
+    async function saveMyMapCoordinates(lat, lng, showMsg = true) {
+      if (!currentUser) return;
+      const placeName = await reverseGeocode(lat, lng);
+      const patch = { lat, lng, ghostMode: false };
+      if (placeName) patch.placeName = placeName;
+
+      await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), patch).catch(() => {});
+      if (map) map.flyTo([lat, lng], 14, { duration: 0.7 });
+      if (showMsg) {
+        showToast(placeName ? `Pinned at ${placeName} 📍` : "Your map pin has been updated! 📍");
+      }
+    }
+
+    function requestLiveLocation(showFeedback = true) {
+      if (!navigator.geolocation) {
+        if (showFeedback) showToast("GPS unavailable. Search a place or tap Pin icon.");
+        return;
+      }
+      if (showFeedback) showToast("Finding your live GPS location...");
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          await saveMyMapCoordinates(pos.coords.latitude, pos.coords.longitude, showFeedback);
+        },
+        () => {
+          if (showFeedback) showToast("GPS blocked. Use Search bar or tap the Pin icon 📍", 3500);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
     }
 
     function renderMapMarkers() {
@@ -1936,7 +2274,7 @@
         const iconHtml = `
           <div class="custom-user-pin">
             <div class="pin-avatar-ring ${u.online ? "online" : ""}">
-              <img src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" alt="" />
+              <img src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" onerror="this.src='${defaultAvatar(u.uid)}'" alt="" />
               <span class="pin-mood">${escapeHtml(u.moodEmoji || "😎")}</span>
             </div>
             <div class="pin-label">${escapeHtml(u.name || "Friend")}</div>
@@ -1948,22 +2286,57 @@
           mapMarkers[u.uid].setIcon(customIcon);
         } else {
           const marker = L.marker([u.lat, u.lng], { icon: customIcon }).addTo(map);
-          marker.on("click", () => window.openUserProfile(u.uid));
+          marker.on("click", () => {
+            if (!manualPinMode) window.openUserProfile(u.uid);
+          });
           mapMarkers[u.uid] = marker;
         }
       });
     }
 
+    // Place Search (Free OpenStreetMap Nominatim)
+    async function searchMapPlace() {
+      const q = $("mapSearchInput").value.trim();
+      const box = $("mapSearchResults");
+      if (!q) { box.classList.add("hidden"); return; }
+
+      box.classList.remove("hidden");
+      box.innerHTML = `<div class="map-search-item" style="color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> Searching places...</div>`;
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}&accept-language=en`);
+        const places = await res.json();
+        if (!places || places.length === 0) {
+          box.innerHTML = `<div class="map-search-item" style="color:var(--muted);">No places found for "${escapeHtml(q)}"</div>`;
+          return;
+        }
+        box.innerHTML = places.map((p) => `
+          <div class="map-search-item" onclick="window.selectSearchedPlace(${parseFloat(p.lat)}, ${parseFloat(p.lon)}, '${escapeHtml(p.display_name).replace(/'/g, "")}')">
+            <i class="fa-solid fa-location-dot" style="color:var(--primary-2);"></i>
+            <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(p.display_name)}</div>
+          </div>`).join("");
+      } catch {
+        box.innerHTML = `<div class="map-search-item" style="color:#f87171;">Search failed. Check internet connection.</div>`;
+      }
+    }
+
+    window.selectSearchedPlace = async (lat, lng, label) => {
+      $("mapSearchResults").classList.add("hidden");
+      $("mapSearchInput").value = label.split(",")[0];
+      if (map) map.flyTo([lat, lng], 14, { duration: 0.7 });
+      if (confirm(`Pin your profile location to "${label.split(",").slice(0, 2).join(", ")}"?`)) {
+        await saveMyMapCoordinates(lat, lng, true);
+      }
+    };
+
+    $("mapSearchGoBtn").addEventListener("click", searchMapPlace);
+    $("mapSearchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); searchMapPlace(); } });
     $("toggleMapThemeBtn").addEventListener("click", () => {
       mapThemeIndex = (mapThemeIndex + 1) % MAP_THEMES.length;
       if (map) applyMapTiles();
     });
     $("locateMeBtn").addEventListener("click", () => requestLiveLocation(true));
-    $("setManualPinBtn").addEventListener("click", () => {
-      manualPinMode = !manualPinMode;
-      $("setManualPinBtn").style.background = manualPinMode ? "var(--primary-2)" : "";
-      showToast(manualPinMode ? "Tap anywhere on the map to set your pin 📍" : "Manual pin mode cancelled.");
-    });
+    $("setManualPinBtn").addEventListener("click", () => setManualPinMode(!manualPinMode));
+    $("cancelPinModeBtn").addEventListener("click", () => setManualPinMode(false));
 
     // ==================== USER PUBLIC PROFILE & IMPRESS ====================
     window.openUserProfile = (uid) => {
@@ -1984,7 +2357,7 @@
           </div>
           <h2 style="font-size:19px;margin-top:9px;">${escapeHtml(u.name || "Friend")}</h2>
           <p style="font-size:12.5px;color:${u.online ? "#4ade80" : "var(--muted)"};margin-top:2px;">
-            ${u.online ? "● Online Now" : formatDetailedLastSeen(u.lastSeen)}${dist ? ` • 📍 ${dist} away` : ""}
+            ${u.online ? "● Online Now" : formatDetailedLastSeen(u.lastSeen)}${u.placeName ? ` • 📍 ${escapeHtml(u.placeName)}` : (dist ? ` • 📍 ${dist} away` : "")}
           </p>
           <p style="font-size:13px;color:var(--muted);margin-top:6px;">${escapeHtml(u.bio || "")}</p>
           ${pills.length ? `<div class="mini-stats-row" style="justify-content:center;margin-top:10px;">${pills.map(p => `<span class="mini-stat-pill">${p}</span>`).join("")}</div>` : ""}
@@ -1996,18 +2369,17 @@
         </div>
 
         ${isMe ? `
-          <button class="btn-primary" onclick="document.getElementById('userProfileModal').classList.add('hidden');window.switchTab('profileView');">Edit My Profile</button>
+          <button class="btn-primary" onclick="document.getElementById('userProfileModal').classList.add('hidden');window.switchTab('profileView');">Open My Profile</button>
         ` : `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <button class="act-btn ${impressedByMe ? "impressed" : ""}" style="padding:12px;" onclick="window.toggleImpress('${u.uid}', true)">
+            <button class="act-btn ${impressedByMe ? "impressed" : ""}" style="padding:12px;" onclick="window.toggleImpress('${escapeHtml(u.uid)}', true)">
               ${impressedByMe ? "💖 Impressed" : "✨ Impress"} (${impressCount})
             </button>
-            <button class="btn-primary" style="padding:12px;" onclick="document.getElementById('userProfileModal').classList.add('hidden');window.startDirectChat('${u.uid}');">
+            <button class="btn-primary" style="padding:12px;" onclick="document.getElementById('userProfileModal').classList.add('hidden');window.startDirectChat('${escapeHtml(u.uid)}');">
               💬 Message
             </button>
           </div>
-        `}
-      `;
+        `}`;
       $("userProfileModal").classList.remove("hidden");
     };
 
@@ -2034,7 +2406,6 @@
           `${senderName} liked your mood & hangout plan. Tap to chat!`
         );
       }
-
       if (refreshModal) setTimeout(() => window.openUserProfile(targetUid), 150);
     };
 
@@ -2047,13 +2418,13 @@
       window.switchTab("mapView");
       setTimeout(() => {
         if (map) {
-          map.setView([u.lat, u.lng], 15, { animate: true });
+          map.flyTo([u.lat, u.lng], 15, { duration: 0.7 });
           window.openUserProfile(uid);
         }
-      }, 220);
+      }, 240);
     };
 
-    // ==================== 3. ULTRA-MODERN MESSAGING SYSTEM ====================
+    // ==================== 3. MESSAGING SYSTEM ====================
     function getChatId(uid1, uid2) {
       return [uid1, uid2].sort().join("_");
     }
@@ -2063,6 +2434,8 @@
       onValue(ref(db, `${DB_ROOT}/userChats/${currentUser.uid}`), (snap) => {
         const data = snap.val() || {};
         const list = Object.values(data).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        myChatsCount = list.length;
+        if ($("statChatsCount")) $("statChatsCount").textContent = myChatsCount;
 
         let hasUnread = false;
         list.forEach((c) => {
@@ -2099,9 +2472,9 @@
           const isOnline = peer.online === true;
 
           return `
-            <div class="chat-row" onclick="window.startDirectChat('${c.peerUid}')">
+            <div class="chat-row" onclick="window.startDirectChat('${escapeHtml(c.peerUid)}')">
               <div class="avatar-wrap" style="width:48px;height:48px;">
-                <img class="avatar-img" style="width:48px;height:48px;border-color:${isOnline ? "var(--online)" : "var(--offline)"};" src="${escapeHtml(avatar)}" />
+                <img class="avatar-img lazy-img" loading="lazy" onload="this.classList.add('loaded')" style="width:48px;height:48px;border-color:${isOnline ? "var(--online)" : "var(--offline)"};" src="${escapeHtml(avatar)}" />
                 <span class="status-dot" style="background:${isOnline ? "var(--online)" : "var(--offline)"};"></span>
               </div>
               <div class="chat-row-info">
@@ -2116,6 +2489,8 @@
               </div>
             </div>`;
         }).join("");
+      }, () => {
+        $("chatsListContainer").innerHTML = `<div class="empty-state"><i class="fa-regular fa-comments"></i>Unable to load messages.</div>`;
       });
     }
 
@@ -2145,27 +2520,22 @@
       update(ref(db, `${DB_ROOT}/userChats/${currentUser.uid}/${peerUid}`), { unread: false }).catch(() => {});
 
       $("chatOverlay").classList.remove("hidden");
-      $("chatMessagesBox").innerHTML = `<div class="empty-state" style="padding:30px;">Loading messages...</div>`;
+      $("chatMessagesBox").innerHTML = `<div class="empty-state" style="padding:36px;"><div class="spinner-ring" style="margin:0 auto 12px;width:30px;height:30px;"></div>Loading conversation...</div>`;
 
       if (activeChatListenerRef) off(activeChatListenerRef);
       if (activeTypingListenerRef) off(activeTypingListenerRef);
 
       const chatId = getChatId(currentUser.uid, peerUid);
 
-      // Live Typing Listener
       activeTypingListenerRef = ref(db, `${DB_ROOT}/typing/${chatId}/${peerUid}`);
       onValue(activeTypingListenerRef, (snap) => {
         const isTyping = Boolean(snap.val());
         $("typingIndicatorBar").classList.toggle("hidden", !isTyping);
         $("typingIndicatorText").textContent = `${(allUsers[peerUid]?.name || "Friend").split(" ")[0]} is typing...`;
         if (allUsers[peerUid]) updateChatPeerHeader(allUsers[peerUid], isTyping);
-        if (isTyping) {
-          const box = $("chatMessagesBox");
-          box.scrollTop = box.scrollHeight;
-        }
+        if (isTyping) $("chatMessagesBox").scrollTop = $("chatMessagesBox").scrollHeight;
       });
 
-      // Messages Listener
       activeChatListenerRef = query(ref(db, `${DB_ROOT}/chats/${chatId}/messages`), limitToLast(120));
       onValue(activeChatListenerRef, (snap) => {
         const raw = snap.val() || {};
@@ -2209,7 +2579,7 @@
               mediaHtml = `<div class="view-once-pill" onclick="event.stopPropagation();window.openViewOncePhoto('${chatId}', '${msgId}', '${escapeHtml(m.imageUrl)}')"><i class="fa-solid fa-lock"></i> Tap to view 1x Photo</div>`;
             }
           } else if (m.imageUrl) {
-            mediaHtml = `<img class="msg-img" src="${escapeHtml(m.imageUrl)}" alt="Photo" />`;
+            mediaHtml = `<img class="msg-img lazy-img" loading="lazy" onload="this.classList.add('loaded')" src="${escapeHtml(m.imageUrl)}" alt="Photo" />`;
           }
 
           return `
@@ -2226,18 +2596,12 @@
       });
     };
 
-    // Voice Player Controller
     window.toggleVoicePlay = (msgId, url) => {
       const btn = $(`vbtn-${msgId}`);
       const bar = $(`vbar-${msgId}`);
       if (activeAudioEl && activeAudioEl.dataset.msgId === msgId) {
-        if (activeAudioEl.paused) {
-          activeAudioEl.play();
-          if (btn) btn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-        } else {
-          activeAudioEl.pause();
-          if (btn) btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-        }
+        if (activeAudioEl.paused) { activeAudioEl.play(); if (btn) btn.innerHTML = `<i class="fa-solid fa-pause"></i>`; }
+        else { activeAudioEl.pause(); if (btn) btn.innerHTML = `<i class="fa-solid fa-play"></i>`; }
         return;
       }
       if (activeAudioEl) {
@@ -2249,42 +2613,29 @@
       audio.dataset.msgId = msgId;
       activeAudioEl = audio;
       if (btn) btn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-
-      audio.ontimeupdate = () => {
-        if (audio.duration && bar) bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
-      };
-      audio.onended = () => {
-        if (btn) btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-        if (bar) bar.style.width = "0%";
-      };
+      audio.ontimeupdate = () => { if (audio.duration && bar) bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`; };
+      audio.onended = () => { if (btn) btn.innerHTML = `<i class="fa-solid fa-play"></i>`; if (bar) bar.style.width = "0%"; };
       audio.play().catch(() => showToast("Unable to play voice message."));
     };
 
-    // View Once Photo Opener
     window.openViewOncePhoto = async (chatId, msgId, url) => {
       if (!url) return;
       $("viewOnceImg").src = url;
       $("viewOnceViewer").classList.remove("hidden");
-      await update(ref(db, `${DB_ROOT}/chats/${chatId}/messages/${msgId}`), {
-        viewed: true,
-        imageUrl: ""
-      });
+      await update(ref(db, `${DB_ROOT}/chats/${chatId}/messages/${msgId}`), { viewed: true, imageUrl: "" });
     };
     $("closeViewOnceBtn").addEventListener("click", () => {
       $("viewOnceImg").src = "";
       $("viewOnceViewer").classList.add("hidden");
     });
 
-    // Delete For Me / Delete For Everyone
     window.openMsgActions = (msgId, isMe) => {
       selectedMsgForAction = { msgId, isMe };
       $("deleteForEveryoneBtn").classList.toggle("hidden", !isMe);
       $("msgActionModal").classList.remove("hidden");
     };
     $("cancelMsgActionBtn").addEventListener("click", () => $("msgActionModal").classList.add("hidden"));
-    $("msgActionModal").addEventListener("click", (e) => {
-      if (e.target === $("msgActionModal")) $("msgActionModal").classList.add("hidden");
-    });
+    $("msgActionModal").addEventListener("click", (e) => { if (e.target === $("msgActionModal")) $("msgActionModal").classList.add("hidden"); });
 
     $("deleteForMeBtn").addEventListener("click", async () => {
       if (!selectedMsgForAction || !currentUser || !activeChatPeerUid) return;
@@ -2298,16 +2649,12 @@
       if (!selectedMsgForAction || !selectedMsgForAction.isMe || !currentUser || !activeChatPeerUid) return;
       const chatId = getChatId(currentUser.uid, activeChatPeerUid);
       await update(ref(db, `${DB_ROOT}/chats/${chatId}/messages/${selectedMsgForAction.msgId}`), {
-        deletedForEveryone: true,
-        text: "",
-        imageUrl: "",
-        audioUrl: ""
+        deletedForEveryone: true, text: "", imageUrl: "", audioUrl: ""
       });
       $("msgActionModal").classList.add("hidden");
       showToast("Deleted for everyone");
     });
 
-    // Send Message Core (with Background Push Trigger)
     async function sendMessage({ text = "", imageUrl = "", audioUrl = "", type = "text", viewOnce = false, duration = "" }) {
       if (!currentUser || !activeChatPeerUid) return;
       if (!text.trim() && !imageUrl && !audioUrl) return;
@@ -2317,15 +2664,7 @@
       const now = Date.now();
 
       await push(ref(db, `${DB_ROOT}/chats/${chatId}/messages`), {
-        sender: currentUser.uid,
-        type,
-        text: text.trim(),
-        imageUrl,
-        audioUrl,
-        viewOnce,
-        viewed: false,
-        duration,
-        timestamp: now
+        sender: currentUser.uid, type, text: text.trim(), imageUrl, audioUrl, viewOnce, viewed: false, duration, timestamp: now
       });
 
       SoundFX.sent();
@@ -2338,40 +2677,23 @@
 
       const peer = allUsers[targetUid] || {};
       await update(ref(db, `${DB_ROOT}/userChats/${currentUser.uid}/${targetUid}`), {
-        peerUid: targetUid,
-        peerName: peer.name || "Friend",
-        peerPhoto: peer.photoURL || defaultAvatar(targetUid),
-        lastMessage: preview,
-        lastSender: currentUser.uid,
-        unread: false,
-        timestamp: now
+        peerUid: targetUid, peerName: peer.name || "Friend", peerPhoto: peer.photoURL || defaultAvatar(targetUid),
+        lastMessage: preview, lastSender: currentUser.uid, unread: false, timestamp: now
       });
       await update(ref(db, `${DB_ROOT}/userChats/${targetUid}/${currentUser.uid}`), {
-        peerUid: currentUser.uid,
-        peerName: myProfile?.name || "Friend",
-        peerPhoto: myProfile?.photoURL || defaultAvatar(currentUser.uid),
-        lastMessage: preview,
-        lastSender: currentUser.uid,
-        unread: true,
-        timestamp: now
+        peerUid: currentUser.uid, peerName: myProfile?.name || "Friend", peerPhoto: myProfile?.photoURL || defaultAvatar(currentUser.uid),
+        lastMessage: preview, lastSender: currentUser.uid, unread: true, timestamp: now
       });
 
-      // Trigger OneSignal Background Push via Relay
-      const senderName = myProfile?.name || "New Message";
-      triggerBackgroundPush(targetUid, `💬 ${senderName}`, preview);
+      triggerBackgroundPush(targetUid, `💬 ${myProfile?.name || "New Message"}`, preview);
     }
 
-    // Typing Status + Modern Typing Sound
     function setTypingState(isTyping) {
       if (!currentUser || !activeChatPeerUid) return;
       const chatId = getChatId(currentUser.uid, activeChatPeerUid);
       const tRef = ref(db, `${DB_ROOT}/typing/${chatId}/${currentUser.uid}`);
-      if (isTyping) {
-        set(tRef, true);
-        onDisconnect(tRef).remove();
-      } else {
-        remove(tRef);
-      }
+      if (isTyping) { set(tRef, true); onDisconnect(tRef).remove(); }
+      else remove(tRef);
     }
 
     $("chatTextInput").addEventListener("input", () => {
@@ -2380,16 +2702,10 @@
       $("voiceRecordBtn").classList.toggle("hidden", hasText);
 
       const now = Date.now();
-      if (now - lastTypingTick > 65) {
-        SoundFX.typingTick();
-        lastTypingTick = now;
-      }
-
+      if (now - lastTypingTick > 65) { SoundFX.typingTick(); lastTypingTick = now; }
       setTypingState(hasText);
       clearTimeout(typingTimeout);
-      if (hasText) {
-        typingTimeout = setTimeout(() => setTypingState(false), 2500);
-      }
+      if (hasText) typingTimeout = setTimeout(() => setTypingState(false), 2500);
     });
 
     $("chatForm").addEventListener("submit", async (e) => {
@@ -2417,20 +2733,17 @@
     $("chatPeerProfileBtn").addEventListener("click", () => { if (activeChatPeerUid) window.openUserProfile(activeChatPeerUid); });
     $("chatHeaderInfoTap").addEventListener("click", () => { if (activeChatPeerUid) window.openUserProfile(activeChatPeerUid); });
 
-    // ==================== VOICE MESSAGING (CLOUDINARY) ====================
+    // ==================== VOICE MESSAGING ====================
     $("voiceRecordBtn").addEventListener("click", async () => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showToast("Microphone is not supported in this browser/WebView.", 3500);
+        showToast("Microphone is not supported here.", 3500);
         return;
       }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         voiceChunks = [];
-        const mimeType = MediaRecorder.isTypeSupported("audio/webm")
-          ? "audio/webm"
-          : (MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "");
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : (MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "");
         mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) voiceChunks.push(e.data); };
         mediaRecorder.start();
 
@@ -2441,31 +2754,24 @@
 
         voiceTimerInterval = setInterval(() => {
           voiceSeconds++;
-          const m = Math.floor(voiceSeconds / 60);
-          const s = String(voiceSeconds % 60).padStart(2, "0");
-          $("voiceRecTimer").textContent = `${m}:${s}`;
+          $("voiceRecTimer").textContent = `${Math.floor(voiceSeconds / 60)}:${String(voiceSeconds % 60).padStart(2, "0")}`;
         }, 1000);
-      } catch (err) {
-        showToast("Please grant Microphone permission to send voice messages.", 3800);
+      } catch {
+        showToast("Please grant Microphone permission to record voice.", 3500);
       }
     });
 
     function stopVoiceStream() {
       clearInterval(voiceTimerInterval);
-      if (mediaRecorder && mediaRecorder.stream) {
-        mediaRecorder.stream.getTracks().forEach((t) => t.stop());
-      }
+      if (mediaRecorder && mediaRecorder.stream) mediaRecorder.stream.getTracks().forEach((t) => t.stop());
       $("voiceRecBar").classList.add("hidden");
       $("chatForm").classList.remove("hidden");
     }
 
     $("cancelVoiceBtn").addEventListener("click", () => {
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.onstop = null;
-        mediaRecorder.stop();
-      }
+      if (mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.onstop = null; mediaRecorder.stop(); }
       stopVoiceStream();
-      showToast("Voice recording cancelled");
+      showToast("Recording cancelled");
     });
 
     $("sendVoiceBtn").addEventListener("click", () => {
@@ -2474,23 +2780,23 @@
       mediaRecorder.onstop = async () => {
         const blob = new Blob(voiceChunks, { type: mediaRecorder.mimeType || "audio/webm" });
         stopVoiceStream();
-        if (blob.size < 500) {
-          showToast("Recording too short.");
-          return;
-        }
-        showToast("Uploading voice message...");
+        if (blob.size < 500) { showToast("Recording too short."); return; }
+        setLoading(true, "Uploading voice message...");
         try {
           const audioUrl = await uploadToCloudinary(blob, `voice_${Date.now()}.webm`);
           await sendMessage({ type: "voice", audioUrl, duration: durText });
-        } catch (err) {
-          showToast("Voice upload failed. Please try again.");
+        } catch {
+          showToast("Voice upload failed.");
+        } finally {
+          setLoading(false);
         }
       };
       mediaRecorder.stop();
     });
 
-    // ==================== GALLERY PHOTO CROPPER & VIEW ONCE ====================
+    // ==================== UNIFIED CROPPER (PROFILE AVATAR + CHAT PHOTO) ====================
     const cropState = {
+      mode: "chat", // "avatar" or "chat"
       img: null,
       zoom: 1,
       rotation: 0,
@@ -2504,16 +2810,13 @@
       lastY: 0
     };
 
-    $("chatGalleryBtn").addEventListener("click", () => $("chatGalleryInput").click());
-
-    $("chatGalleryInput").addEventListener("change", (e) => {
-      const file = e.target.files[0];
+    function openCropperWithFile(file, mode = "chat") {
       if (!file) return;
-      e.target.value = "";
       const reader = new FileReader();
       reader.onload = () => {
         const img = new Image();
         img.onload = () => {
+          cropState.mode = mode;
           cropState.img = img;
           cropState.zoom = 1;
           cropState.rotation = 0;
@@ -2522,8 +2825,25 @@
           cropState.aspect = 1;
           cropState.filter = "none";
           cropState.viewOnce = false;
+
           $("cropZoomSlider").value = "1";
           $("cropCaptionInput").value = "";
+          document.querySelectorAll(".crop-tools-row .chip[data-filter]").forEach((b) => b.classList.toggle("active", b.dataset.filter === "none"));
+          document.querySelectorAll(".crop-aspect-chip").forEach((b) => {
+            b.classList.toggle("active", b.dataset.aspect === "1");
+            b.classList.toggle("hidden", mode === "avatar");
+          });
+
+          const isAvatar = mode === "avatar";
+          $("cropperHeaderTitle").textContent = isAvatar ? "Crop Profile Picture" : "Crop & Edit Photo";
+          $("toggleViewOnceBtn").classList.toggle("hidden", isAvatar);
+          $("cropCaptionInput").classList.toggle("hidden", isAvatar);
+          $("cropCanvas").classList.toggle("avatar-circle-preview", isAvatar);
+          $("confirmSendPhotoBtn").style.width = isAvatar ? "100%" : "auto";
+          $("confirmSendPhotoBtn").innerHTML = isAvatar
+            ? `<i class="fa-solid fa-check"></i> Save Profile Photo`
+            : `<i class="fa-solid fa-paper-plane"></i> Send`;
+
           updateViewOnceBtnUI();
           resizeCropCanvas();
           drawCropCanvas();
@@ -2532,11 +2852,25 @@
         img.src = reader.result;
       };
       reader.readAsDataURL(file);
+    }
+
+    $("chatGalleryBtn").addEventListener("click", () => $("chatGalleryInput").click());
+    $("chatGalleryInput").addEventListener("change", (e) => {
+      const f = e.target.files[0];
+      e.target.value = "";
+      if (f) openCropperWithFile(f, "chat");
+    });
+
+    $("uploadAvatarBtn").addEventListener("click", () => $("avatarFileInput").click());
+    $("avatarFileInput").addEventListener("change", (e) => {
+      const f = e.target.files[0];
+      e.target.value = "";
+      if (f) openCropperWithFile(f, "avatar");
     });
 
     function resizeCropCanvas() {
       const canvas = $("cropCanvas");
-      const base = Math.min(window.innerWidth - 36, 330);
+      const base = Math.min(window.innerWidth - 40, 320);
       if (cropState.aspect >= 1) {
         canvas.width = base;
         canvas.height = Math.round(base / cropState.aspect);
@@ -2585,18 +2919,12 @@
     });
     cropCanvas.addEventListener("pointerup", () => { cropState.dragging = false; });
 
-    $("cropZoomSlider").addEventListener("input", (e) => {
-      cropState.zoom = parseFloat(e.target.value);
-      drawCropCanvas();
-    });
-    $("cropRotateBtn").addEventListener("click", () => {
-      cropState.rotation = (cropState.rotation + 90) % 360;
-      drawCropCanvas();
-    });
+    $("cropZoomSlider").addEventListener("input", (e) => { cropState.zoom = parseFloat(e.target.value); drawCropCanvas(); });
+    $("cropRotateBtn").addEventListener("click", () => { cropState.rotation = (cropState.rotation + 90) % 360; drawCropCanvas(); });
 
-    document.querySelectorAll(".crop-tools-row .chip[data-aspect]").forEach((btn) => {
+    document.querySelectorAll(".crop-aspect-chip").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".crop-tools-row .chip[data-aspect]").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".crop-aspect-chip").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         cropState.aspect = parseFloat(btn.dataset.aspect);
         cropState.offsetX = 0;
@@ -2621,38 +2949,126 @@
       btn.style.borderColor = cropState.viewOnce ? "var(--primary-2)" : "var(--border)";
       btn.style.color = cropState.viewOnce ? "#f472b6" : "#fff";
     }
-    $("toggleViewOnceBtn").addEventListener("click", () => {
-      cropState.viewOnce = !cropState.viewOnce;
-      updateViewOnceBtnUI();
-    });
-
+    $("toggleViewOnceBtn").addEventListener("click", () => { cropState.viewOnce = !cropState.viewOnce; updateViewOnceBtnUI(); });
     $("closeCropperBtn").addEventListener("click", () => $("photoEditorModal").classList.add("hidden"));
 
     $("confirmSendPhotoBtn").addEventListener("click", () => {
-      const btn = $("confirmSendPhotoBtn");
-      btn.disabled = true;
-      btn.textContent = "Sending...";
+      const isAvatar = cropState.mode === "avatar";
+      setLoading(true, isAvatar ? "Saving profile photo..." : "Sending photo...");
       cropCanvas.toBlob(async (blob) => {
         try {
-          const url = await uploadToCloudinary(blob, `photo_${Date.now()}.jpg`);
-          await sendMessage({
-            type: "image",
-            imageUrl: url,
-            text: $("cropCaptionInput").value,
-            viewOnce: cropState.viewOnce
-          });
+          const url = await uploadToCloudinary(blob, `${isAvatar ? "avatar" : "photo"}_${Date.now()}.jpg`);
+          if (isAvatar && currentUser) {
+            await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { photoURL: url });
+            $("profAvatarPreview").src = url;
+            showToast("Profile picture updated! ✅");
+          } else {
+            await sendMessage({
+              type: "image",
+              imageUrl: url,
+              text: $("cropCaptionInput").value,
+              viewOnce: cropState.viewOnce
+            });
+          }
           $("photoEditorModal").classList.add("hidden");
-        } catch (err) {
-          showToast("Photo upload failed. Please try again.");
+        } catch {
+          showToast("Upload failed. Please try again.");
         } finally {
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
+          setLoading(false);
         }
-      }, "image/jpeg", 0.86);
+      }, "image/jpeg", 0.88);
     });
 
-    // ==================== 4. PROFILE TAB & COMPLIANCE MENU ====================
-    $("quickMoodBtn").addEventListener("click", () => window.switchTab("profileView"));
+    // ==================== 4. SOCIAL PROFILE VIEW & CLEAN EDIT MODALS ====================
+    function renderSocialProfileView() {
+      if (!myProfile) return;
+      const u = myProfile;
+      $("headerMoodEmoji").textContent = u.moodEmoji || "😎";
+      $("headerPlanLabel").textContent = u.planTag || "Set Plan";
+
+      $("profAvatarPreview").src = u.photoURL || defaultAvatar(u.uid);
+      $("profMoodFloat").textContent = u.moodEmoji || "😎";
+      $("profDisplayName").textContent = u.name || "Friend";
+      $("profDisplayBio").textContent = u.bio || "Looking to make new friends ✨";
+      $("profDisplayPlace").textContent = u.placeName ? `📍 ${u.placeName}` : "📍 Tap Map to pin your city";
+
+      const impressCount = u.impressedBy ? Object.keys(u.impressedBy).length : 0;
+      $("statImpressCount").textContent = impressCount;
+      $("statChatsCount").textContent = myChatsCount;
+      $("statMapStatus").textContent = u.ghostMode ? "Ghost" : "Live";
+      $("statMapStatus").style.color = u.ghostMode ? "var(--muted)" : "var(--online)";
+
+      $("profileGhostPill").innerHTML = u.ghostMode
+        ? `<i class="fa-solid fa-ghost" style="color:var(--muted);"></i> Ghost Mode`
+        : `<i class="fa-solid fa-earth-asia" style="color:#4ade80;"></i> Visible on Map`;
+
+      $("vibePreviewEmoji").textContent = u.moodEmoji || "😎";
+      $("vibePreviewTag").textContent = u.planTag || "Make Friends";
+      $("vibePreviewNote").textContent = u.planNote || "Hey! Let's connect, chat, and hang out.";
+      $("quickGhostToggle").checked = Boolean(u.ghostMode);
+
+      const aboutItems = [
+        { label: "Gender", val: u.gender || "Not set", pub: u.showGender !== false },
+        { label: "Age", val: u.age ? `${u.age} yrs` : "Not set", pub: u.showAge !== false },
+        { label: "Height", val: u.height || "Not set", pub: u.showHeight === true },
+        { label: "Weight", val: u.weight || "Not set", pub: u.showWeight === true }
+      ];
+      $("profileAboutGrid").innerHTML = aboutItems.map((it) => `
+        <div class="about-tile">
+          <div class="about-tile-top">
+            <span>${it.label}</span>
+            <span style="color:${it.pub ? "#4ade80" : "var(--muted)"};">${it.pub ? "👁️ Public" : "🔒 Hidden"}</span>
+          </div>
+          <div class="about-tile-val">${escapeHtml(it.val)}</div>
+        </div>`).join("");
+    }
+
+    function openEditDetailsSheet() {
+      if (!myProfile) return;
+      $("profNameInput").value = myProfile.name || "";
+      $("profBioInput").value = myProfile.bio || "";
+      $("profGenderInput").value = myProfile.gender || "";
+      $("profAgeInput").value = myProfile.age || "";
+      $("profHeightInput").value = myProfile.height || "";
+      $("profWeightInput").value = myProfile.weight || "";
+      $("showGenderToggle").checked = myProfile.showGender !== false;
+      $("showAgeToggle").checked = myProfile.showAge !== false;
+      $("showHeightToggle").checked = Boolean(myProfile.showHeight);
+      $("showWeightToggle").checked = Boolean(myProfile.showWeight);
+      refreshVisibilityLabels();
+      $("editDetailsModal").classList.remove("hidden");
+    }
+
+    function openMoodPlanSheet() {
+      if (!myProfile) return;
+      selectedMoodEmoji = myProfile.moodEmoji || "😎";
+      selectedPlanTag = myProfile.planTag || "Make Friends";
+      $("profPlanNoteInput").value = myProfile.planNote || "";
+      document.querySelectorAll(".emoji-opt").forEach((b) => b.classList.toggle("selected", b.dataset.emoji === selectedMoodEmoji));
+      document.querySelectorAll(".plan-opt").forEach((b) => b.classList.toggle("selected", b.dataset.plan === selectedPlanTag));
+      $("moodPlanModal").classList.remove("hidden");
+    }
+
+    function refreshVisibilityLabels() {
+      $("lblShowGender").textContent = $("showGenderToggle").checked ? "Public" : "Hidden";
+      $("lblShowAge").textContent = $("showAgeToggle").checked ? "Public" : "Hidden";
+      $("lblShowHeight").textContent = $("showHeightToggle").checked ? "Public" : "Hidden";
+      $("lblShowWeight").textContent = $("showWeightToggle").checked ? "Public" : "Hidden";
+    }
+    ["showGenderToggle", "showAgeToggle", "showHeightToggle", "showWeightToggle"].forEach((id) => {
+      $(id).addEventListener("change", refreshVisibilityLabels);
+    });
+
+    $("openEditDetailsModalBtn").addEventListener("click", openEditDetailsSheet);
+    $("editAboutQuickBtn").addEventListener("click", openEditDetailsSheet);
+    $("closeEditDetailsBtn").addEventListener("click", () => $("editDetailsModal").classList.add("hidden"));
+    $("editDetailsModal").addEventListener("click", (e) => { if (e.target === $("editDetailsModal")) $("editDetailsModal").classList.add("hidden"); });
+
+    $("openMoodPlanModalBtn").addEventListener("click", openMoodPlanSheet);
+    $("myVibePreviewCard").addEventListener("click", openMoodPlanSheet);
+    $("quickMoodBtn").addEventListener("click", openMoodPlanSheet);
+    $("closeMoodPlanBtn").addEventListener("click", () => $("moodPlanModal").classList.add("hidden"));
+    $("moodPlanModal").addEventListener("click", (e) => { if (e.target === $("moodPlanModal")) $("moodPlanModal").classList.add("hidden"); });
 
     $("moodEmojiGrid").addEventListener("click", (e) => {
       const btn = e.target.closest(".emoji-opt");
@@ -2661,7 +3077,6 @@
       document.querySelectorAll(".emoji-opt").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
     });
-
     $("planTagGrid").addEventListener("click", (e) => {
       const btn = e.target.closest(".plan-opt");
       if (!btn) return;
@@ -2670,48 +3085,57 @@
       btn.classList.add("selected");
     });
 
-    $("uploadAvatarBtn").addEventListener("click", () => $("avatarFileInput").click());
-    $("avatarFileInput").addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      e.target.value = "";
-      showToast("Uploading profile photo...");
+    $("saveDetailsBtn").addEventListener("click", async () => {
+      if (!currentUser) return;
+      setLoading(true, "Saving profile...");
       try {
-        const url = await uploadToCloudinary(file, `avatar_${Date.now()}.jpg`);
-        uploadedAvatarUrl = url;
-        $("profAvatarPreview").src = url;
-        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { photoURL: url });
-        showToast("Profile photo updated! ✅");
-      } catch (err) {
-        showToast("Photo upload failed.");
+        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), {
+          name: $("profNameInput").value.trim() || "Friend",
+          bio: $("profBioInput").value.trim(),
+          gender: $("profGenderInput").value,
+          age: $("profAgeInput").value.trim(),
+          height: $("profHeightInput").value.trim(),
+          weight: $("profWeightInput").value.trim(),
+          showGender: $("showGenderToggle").checked,
+          showAge: $("showAgeToggle").checked,
+          showHeight: $("showHeightToggle").checked,
+          showWeight: $("showWeightToggle").checked
+        });
+        $("editDetailsModal").classList.add("hidden");
+        showToast("Profile updated! ✨");
+      } catch {
+        showToast("Failed to save changes.");
+      } finally {
+        setLoading(false);
       }
     });
 
-    $("saveProfileBtn").addEventListener("click", async () => {
+    $("saveMoodPlanBtn").addEventListener("click", async () => {
       if (!currentUser) return;
-      const updates = {
-        name: $("profNameInput").value.trim() || "Friend",
-        bio: $("profBioInput").value.trim(),
-        gender: $("profGenderInput").value,
-        age: $("profAgeInput").value.trim(),
-        height: $("profHeightInput").value.trim(),
-        weight: $("profWeightInput").value.trim(),
-        showGender: $("showGenderToggle").checked,
-        showAge: $("showAgeToggle").checked,
-        showHeight: $("showHeightToggle").checked,
-        showWeight: $("showWeightToggle").checked,
-        photoURL: uploadedAvatarUrl,
-        moodEmoji: selectedMoodEmoji,
-        planTag: selectedPlanTag,
-        planNote: $("profPlanNoteInput").value.trim(),
-        ghostMode: $("profGhostToggle").checked
-      };
-      await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), updates);
-      $("profDisplayName").textContent = updates.name;
-      showToast("Profile saved successfully! ✨");
+      setLoading(true, "Updating vibe...");
+      try {
+        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), {
+          moodEmoji: selectedMoodEmoji,
+          planTag: selectedPlanTag,
+          planNote: $("profPlanNoteInput").value.trim()
+        });
+        $("moodPlanModal").classList.add("hidden");
+        showToast("Mood & hangout plan updated! 🎉");
+      } catch {
+        showToast("Failed to update vibe.");
+      } finally {
+        setLoading(false);
+      }
     });
 
-    // 3-Dot Compliance Menu
+    $("quickGhostToggle").addEventListener("change", async (e) => {
+      if (!currentUser) return;
+      const ghost = e.target.checked;
+      await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { ghostMode: ghost }).catch(() => {});
+      showToast(ghost ? "Ghost Mode enabled 👻" : "You are visible on the map 🌍");
+    });
+
+    // ==================== 3-DOT COMPLIANCE MENU ====================
     $("openComplianceMenuBtn").addEventListener("click", () => $("complianceMenuModal").classList.remove("hidden"));
     $("closeComplianceBtn").addEventListener("click", () => $("complianceMenuModal").classList.add("hidden"));
     $("complianceMenuModal").addEventListener("click", (e) => {
@@ -2731,13 +3155,12 @@
       openInfoDialog(`
         <h3 style="font-size:17px;margin-bottom:10px;">🛡️ Privacy Policy — ${APP_NAME}</h3>
         <div style="font-size:13px;color:var(--muted);line-height:1.65;">
-          <p style="margin-bottom:8px;"><strong>1. Data We Collect:</strong> We store your email, display name, profile photo, optional personal stats (gender, age, height, weight), optional approximate/live map location, and chat messages solely to operate ${APP_NAME}.</p>
-          <p style="margin-bottom:8px;"><strong>2. Visibility Control:</strong> You can hide your personal details using the toggles in Profile, and hide your map pin anytime using Ghost Mode.</p>
-          <p style="margin-bottom:8px;"><strong>3. Media Storage:</strong> Photos and voice messages are securely stored via Cloudinary. View Once photos are removed after opening.</p>
-          <p style="margin-bottom:8px;"><strong>4. Account & Data Deletion:</strong> You can permanently delete your account and associated profile data directly from Profile → ⋮ Menu → Delete Account, or by emailing <strong>${SUPPORT_EMAIL}</strong>.</p>
+          <p style="margin-bottom:8px;"><strong>1. Data We Collect:</strong> We store your email, display name, profile photo, optional personal stats, optional map location, and messages solely to operate ${APP_NAME}.</p>
+          <p style="margin-bottom:8px;"><strong>2. Visibility Control:</strong> You can hide personal details individually in Edit Profile and hide your map pin anytime using Ghost Mode.</p>
+          <p style="margin-bottom:8px;"><strong>3. Media Storage:</strong> Photos and voice messages are stored securely via Cloudinary. View Once photos are removed after opening.</p>
+          <p style="margin-bottom:8px;"><strong>4. Account Deletion:</strong> Permanently delete your account and all profile data from Profile → Menu → Delete Account, or contact <strong>${SUPPORT_EMAIL}</strong>.</p>
         </div>
-        <button class="btn-primary" style="margin-top:14px;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Close</button>
-      `);
+        <button class="btn-primary" style="margin-top:14px;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Close</button>`);
     }
 
     $("openPrivacyPolicyBtn").addEventListener("click", showPrivacyPolicyDialog);
@@ -2747,61 +3170,49 @@
       openInfoDialog(`
         <h3 style="font-size:17px;margin-bottom:10px;">📜 Terms & Community Safety</h3>
         <div style="font-size:13px;color:var(--muted);line-height:1.65;">
-          <p style="margin-bottom:8px;">• Users must be at least 13 years old (or the minimum legal age in their region).</p>
-          <p style="margin-bottom:8px;">• Harassment, hate speech, explicit content, spam, or sharing someone's location without consent is strictly prohibited.</p>
-          <p style="margin-bottom:8px;">• Always meet new friends in safe, public places and inform a trusted person when meeting offline.</p>
-          <p>• To report abuse or request assistance, contact <strong>${SUPPORT_EMAIL}</strong>.</p>
+          <p style="margin-bottom:8px;">• Users must be at least 13 years old (or minimum legal age in their region).</p>
+          <p style="margin-bottom:8px;">• Harassment, hate speech, explicit content, spam, or non-consensual location sharing is prohibited.</p>
+          <p style="margin-bottom:8px;">• Always meet new friends in safe, public places.</p>
+          <p>• To report abuse or request help, email <strong>${SUPPORT_EMAIL}</strong>.</p>
         </div>
-        <button class="btn-primary" style="margin-top:14px;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Got It</button>
-      `);
+        <button class="btn-primary" style="margin-top:14px;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Got It</button>`);
     });
 
     $("openSupportBtn").addEventListener("click", () => {
       openInfoDialog(`
         <h3 style="font-size:17px;margin-bottom:10px;">📧 Support & Help</h3>
-        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-          Need help with your account, reporting a user, or data deletion? Reach out to our support team anytime:
-        </p>
-        <div style="background:var(--surface-2);padding:12px;border-radius:12px;border:1px solid var(--border);text-align:center;font-weight:700;color:var(--accent);margin-bottom:14px;">
-          ${SUPPORT_EMAIL}
-        </div>
-        <a href="mailto:${SUPPORT_EMAIL}?subject=Make%20Friend%20App%20Support" class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Send Email</a>
-        <button class="act-btn" style="width:100%;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Close</button>
-      `);
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">Need help with your account, reporting a user, or data deletion? Contact us anytime:</p>
+        <div style="background:var(--surface-2);padding:12px;border-radius:12px;border:1px solid var(--border);text-align:center;font-weight:700;color:var(--accent);margin-bottom:14px;">${SUPPORT_EMAIL}</div>
+        <a href="mailto:${SUPPORT_EMAIL}?subject=Make%20Friend%20Support" rel="noopener noreferrer" class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Send Email</a>
+        <button class="act-btn" style="width:100%;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Close</button>`);
     });
 
     $("menuLogoutBtn").addEventListener("click", async () => {
       $("complianceMenuModal").classList.add("hidden");
       if (currentUser) {
-        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { online: false, lastSeen: serverTimestamp() });
+        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { online: false, lastSeen: serverTimestamp() }).catch(() => {});
       }
       await signOut(auth);
-      profilePopulatedOnce = false;
       showToast("Logged out successfully");
     });
 
     $("openDeleteAccountBtn").addEventListener("click", () => {
       openInfoDialog(`
         <h3 style="font-size:17px;color:#f87171;margin-bottom:8px;">⚠️ Delete Account Permanently</h3>
-        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;">
-          This will permanently erase your profile, map pin, chat list, and login credentials from <strong>${APP_NAME}</strong>. This action cannot be undone.
-        </p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;">This permanently erases your profile, map pin, chat list, and credentials from <strong>${APP_NAME}</strong>.</p>
         <div class="input-group">
           <label>Type <strong>DELETE</strong> to confirm</label>
           <input type="text" id="confirmDeleteInput" class="input-field" placeholder="DELETE" />
         </div>
         <button class="btn-primary" id="confirmDeleteExecBtn" style="background:var(--danger);margin-bottom:8px;">Delete My Account Forever</button>
-        <button class="act-btn" style="width:100%;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Cancel</button>
-      `);
+        <button class="act-btn" style="width:100%;" onclick="document.getElementById('infoDialogModal').classList.add('hidden')">Cancel</button>`);
 
       $("confirmDeleteExecBtn").addEventListener("click", async () => {
         if ($("confirmDeleteInput").value.trim() !== "DELETE") {
-          showToast('Please type "DELETE" in capital letters to confirm.');
+          showToast('Type "DELETE" in capital letters to confirm.');
           return;
         }
-        const btn = $("confirmDeleteExecBtn");
-        btn.disabled = true;
-        btn.textContent = "Deleting...";
+        setLoading(true, "Deleting account...");
         try {
           const uid = currentUser.uid;
           await remove(ref(db, `${DB_ROOT}/users/${uid}`));
@@ -2809,16 +3220,13 @@
           await remove(ref(db, `${DB_ROOT}/notifications/${uid}`));
           await deleteUser(auth.currentUser);
           $("infoDialogModal").classList.add("hidden");
-          profilePopulatedOnce = false;
-          showToast("Your account and data have been permanently deleted.");
+          showToast("Your account has been permanently deleted.");
         } catch (err) {
-          if (err.code === "auth/requires-recent-login") {
-            showToast("For security, please Log Out and Log In again before deleting your account.", 5000);
-          } else {
-            showToast("Deletion error: " + err.message, 4000);
-          }
-          btn.disabled = false;
-          btn.textContent = "Delete My Account Forever";
+          showToast(err.code === "auth/requires-recent-login"
+            ? "For security, please Log Out and Log In again before deleting."
+            : "Error: " + err.message, 4500);
+        } finally {
+          setLoading(false);
         }
       });
     });
@@ -2831,195 +3239,12 @@
       document.querySelector(`.nav-btn[data-tab="${tabId}"]`)?.classList.add("active");
 
       if (tabId === "mapView") initMapIfNeeded();
-      if (tabId === "profileView") syncMyProfileUI();
+      if (tabId === "profileView") renderSocialProfileView();
     };
 
     document.querySelectorAll(".nav-btn").forEach((btn) => {
       btn.addEventListener("click", () => window.switchTab(btn.dataset.tab));
     });
   </script>
-<!-- ==================== IN-APP + BACKGROUND PUSH NOTIFICATION MODULE ==================== -->
-<script type="module">
-  import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getDatabase, ref, get, push, update, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-  const PUSH_RELAY_URL = "https://script.google.com/macros/s/AKfycbySrB1gV_g7YdqLm89c_ZA203dnsLxBPGtK22Hq2ber8GLn7WMDOMcIrq3EXSM3QBfUDQ/exec";
-  const DB_ROOT = "makeFriendsApp";
-
-  const app = getApp();
-  const auth = getAuth(app);
-  const db = getDatabase(app);
-
-  let meUid = null;
-  let meName = "Someone";
-  let mePhoto = "";
-  let notifHistory = [];
-
-  // 1. Add Notification Bell Icon & History Sheet to Header
-  const headerActions = document.querySelector(".header-actions");
-  if (headerActions && !document.getElementById("notifBellBtn")) {
-    const bellBtn = document.createElement("button");
-    bellBtn.id = "notifBellBtn";
-    bellBtn.type = "button";
-    bellBtn.className = "icon-btn";
-    bellBtn.style.position = "relative";
-    bellBtn.title = "Activity Notifications";
-    bellBtn.innerHTML = `<i class="fa-solid fa-bell"></i><span id="bellUnreadDot" class="hidden" style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ec4899;"></span>`;
-    headerActions.insertBefore(bellBtn, headerActions.firstChild);
-
-    const sheetModal = document.createElement("div");
-    sheetModal.id = "notifHistoryModal";
-    sheetModal.className = "modal-backdrop hidden";
-    sheetModal.innerHTML = `
-      <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <h3 style="font-size:17px;font-weight:800;">🔔 Activity Notifications</h3>
-          <button type="button" class="icon-btn" id="closeNotifHistoryBtn"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div id="notifHistoryList"></div>
-      </div>`;
-    document.body.appendChild(sheetModal);
-
-    bellBtn.addEventListener("click", () => {
-      document.getElementById("bellUnreadDot").classList.add("hidden");
-      renderNotifHistory();
-      sheetModal.classList.remove("hidden");
-      if (meUid) {
-        notifHistory.forEach((n) => {
-          if (!n.read) update(ref(db, `${DB_ROOT}/notifications/${meUid}/${n.id}`), { read: true }).catch(() => {});
-        });
-      }
-    });
-    document.getElementById("closeNotifHistoryBtn").addEventListener("click", () => sheetModal.classList.add("hidden"));
-    sheetModal.addEventListener("click", (e) => { if (e.target === sheetModal) sheetModal.classList.add("hidden"); });
-  }
-
-  function renderNotifHistory() {
-    const box = document.getElementById("notifHistoryList");
-    if (!box) return;
-    if (notifHistory.length === 0) {
-      box.innerHTML = `<div class="empty-state" style="padding:30px 10px;"><i class="fa-regular fa-bell-slash"></i>No notifications yet.</div>`;
-      return;
-    }
-    box.innerHTML = notifHistory.map((n) => `
-      <div class="chat-row" style="margin-bottom:8px;" onclick="document.getElementById('notifHistoryModal').classList.add('hidden');if('${n.peerUid}')window.startDirectChat('${n.peerUid}');">
-        <img src="${n.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${n.peerUid || 'mf'}`}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);" />
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13.5px;font-weight:700;">${n.title || "Make Friend"}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${n.body || ""}</div>
-        </div>
-      </div>`).join("");
-  }
-
-  // 2. Send In-App Notification + Background Push via Google Apps Script
-  async function sendActivityNotification(targetUid, title, body) {
-    if (!targetUid || !meUid || targetUid === meUid) return;
-
-    await push(ref(db, `${DB_ROOT}/notifications/${targetUid}`), {
-      title,
-      body,
-      avatar: mePhoto,
-      peerUid: meUid,
-      read: false,
-      timestamp: Date.now()
-    }).catch(() => {});
-
-    fetch(PUSH_RELAY_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({
-        targetUid,
-        senderUid: meUid,
-        title,
-        body
-      })
-    }).catch(() => {});
-  }
-
-  // 3. Trigger Notification when someone clicks "Impress"
-  const origToggleImpress = window.toggleImpress;
-  window.toggleImpress = async (targetUid, refreshModal = false) => {
-    const wasImpressedSnap = meUid ? await get(ref(db, `${DB_ROOT}/users/${targetUid}/impressedBy/${meUid}`)) : null;
-    const alreadyImpressed = wasImpressedSnap && wasImpressedSnap.exists();
-
-    if (typeof origToggleImpress === "function") {
-      await origToggleImpress(targetUid, refreshModal);
-    }
-
-    if (!alreadyImpressed && meUid && targetUid !== meUid) {
-      await sendActivityNotification(
-        targetUid,
-        `💖 ${meName} is impressed!`,
-        `${meName} liked your mood & hangout plan. Tap to chat!`
-      );
-    }
-  };
-
-  // 4. Sync Auth with Sketchware OneSignal & Watch Outgoing Messages
-  let notifiedOutTimestamps = {};
-  let initialOutWatch = true;
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      meUid = null;
-      if (window.AndroidBridge && typeof window.AndroidBridge.logoutUser === "function") {
-        window.AndroidBridge.logoutUser();
-      }
-      return;
-    }
-
-    meUid = user.uid;
-    initialOutWatch = true;
-    notifiedOutTimestamps = {};
-
-    if (window.AndroidBridge && typeof window.AndroidBridge.loginUser === "function") {
-      window.AndroidBridge.loginUser(user.uid);
-    }
-
-    onValue(ref(db, `${DB_ROOT}/users/${user.uid}`), (snap) => {
-      const u = snap.val();
-      if (u) {
-        meName = u.name || user.displayName || "A friend";
-        mePhoto = u.photoURL || "";
-      }
-    });
-
-    onValue(query(ref(db, `${DB_ROOT}/notifications/${user.uid}`), limitToLast(25)), (snap) => {
-      const val = snap.val() || {};
-      notifHistory = Object.entries(val)
-        .map(([id, item]) => ({ id, ...item }))
-        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-      const hasUnread = notifHistory.some((n) => !n.read);
-      const dot = document.getElementById("bellUnreadDot");
-      if (dot) dot.classList.toggle("hidden", !hasUnread);
-    });
-
-    onValue(ref(db, `${DB_ROOT}/userChats/${user.uid}`), (snap) => {
-      const chats = snap.val() || {};
-      Object.values(chats).forEach((c) => {
-        const prev = notifiedOutTimestamps[c.peerUid] || 0;
-        if (!initialOutWatch && c.timestamp > prev && c.lastSender === user.uid) {
-          fetch(PUSH_RELAY_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({
-              targetUid: c.peerUid,
-              senderUid: user.uid,
-              title: `💬 ${meName}`,
-              body: c.lastMessage || "Sent you a new message"
-            })
-          }).catch(() => {});
-        }
-        notifiedOutTimestamps[c.peerUid] = c.timestamp || 0;
-      });
-      initialOutWatch = false;
-    });
-  });
-</script>
-
 </body>
 </html>
