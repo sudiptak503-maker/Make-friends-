@@ -485,11 +485,35 @@
       letter-spacing: 0.45px; margin: 10px 2px 8px; display: flex; justify-content: space-between; align-items: center;
     }
 
+    /* Pull-to-Refresh Indicator on Home */
+    .ptr-indicator {
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      transition: height 0.22s ease, opacity 0.2s ease;
+      user-select: none;
+    }
+    .ptr-indicator.dragging {
+      transition: none;
+    }
+    .ptr-indicator i {
+      transition: transform 0.2s ease;
+    }
+    .ptr-indicator.ready i {
+      transform: rotate(180deg);
+    }
+
     /* Profile Card on Home */
     .profile-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 13px; margin-bottom: 11px;
-      animation: fadeSlideUp 0.28s ease both;
     }
     .profile-card.is-online {
       border-color: rgba(34, 197, 94, 0.28);
@@ -630,7 +654,6 @@
       display: flex; align-items: center; gap: 12px; padding: 12px;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 16px; margin-bottom: 10px; cursor: pointer;
-      animation: fadeSlideUp 0.24s ease both;
     }
     .chat-row-info { flex: 1; min-width: 0; }
     .chat-row-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -1058,6 +1081,10 @@
 
       <!-- 1. HOME VIEW -->
       <section id="homeView" class="view-panel active">
+        <div id="ptrIndicator" class="ptr-indicator">
+          <i class="fa-solid fa-arrow-down" id="ptrIcon"></i>
+          <span id="ptrText">নিচে টানুন রিফ্রেশ করতে</span>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
           <div class="filter-row" id="planFilterRow" style="flex:1;margin-bottom:0;">
             <button class="chip active" data-filter="all">All</button>
@@ -1824,16 +1851,22 @@
       return d < 1 ? `${Math.round(d * 1000)}m` : `${d.toFixed(1)}km`;
     }
 
-    async function uploadToCloudinary(fileOrBlob, filename = "upload.jpg") {
+        async function uploadToCloudinary(fileOrBlob, filename = "upload.jpg") {
       const formData = new FormData();
-      formData.append("file", fileOrBlob, filename);
+      if (typeof fileOrBlob === "string") {
+        formData.append("file", fileOrBlob);
+      } else {
+        formData.append("file", fileOrBlob, filename);
+      }
       formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
         method: "POST",
         body: formData
       });
-      if (!res.ok) throw new Error("Cloudinary upload failed");
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.secure_url) {
+        throw new Error(data?.error?.message || `Cloudinary error (${res.status})`);
+      }
       return data.secure_url;
     }
 
@@ -2370,24 +2403,26 @@
           try { window.AndroidBridge.loginUser(user.uid); } catch {}
         }
 
-        // Start listeners IMMEDIATELY so feed never gets stuck
-        startUsersListener();
+        // Load Home feed ONCE on entry (no auto-refresh on other users' online/offline)
+        startMyProfileListener(user.uid);
+        loadAllUsersOnce(true);
         startChatsListListener();
         window.MakeFriendNotify.attachUserListener(user.uid);
 
-        // Ensure profile in background safely
+        // Ensure profile in background safely (GPS sync handled by GPS Override Pack)
         try {
           await ensureUserProfile(user);
           setupRealtimePresence(user.uid);
-          requestLiveLocation(false);
         } catch (err) {
           console.error("Profile init error:", err);
           if (String(err.message || "").toLowerCase().includes("permission")) {
             usersLoadError = "Firebase Realtime Database Rules blocked access. Please publish read/write rules for makeFriendsApp.";
-            renderHomeFeed();
+            renderHomeFeed(true);
           }
         }
       } else {
+        if (myProfileListenerRef) { off(myProfileListenerRef); myProfileListenerRef = null; }
+        if (activePeerListenerRef) { off(activePeerListenerRef); activePeerListenerRef = null; }
         window.__mfDeviceLockState.allowedUid = null;
         window.dispatchEvent(new CustomEvent("mf:device-verified", { detail: { uid: null } }));
         if (window.AndroidBridge && typeof window.AndroidBridge.logoutUser === "function") {
@@ -2395,54 +2430,60 @@
         }
         currentUser = null;
         myProfile = null;
+        lastRenderedHomeHtml = "";
         $("appShell").classList.add("hidden");
         $("chatOverlay").classList.add("hidden");
         $("authScreen").classList.remove("hidden");
       }
     });
 
-    async function ensureUserProfile(user) {
+        async function ensureUserProfile(user) {
       const userRef = ref(db, `${DB_ROOT}/users/${user.uid}`);
       const snap = await get(userRef);
-      const existing = snap.val();
+      const existing = snap.val() || {};
 
-      if (!existing) {
-        const initialProfile = {
-          uid: user.uid,
-          name: user.displayName || (user.email ? user.email.split("@")[0] : "New Friend"),
-          email: user.email || "",
-          photoURL: user.photoURL || defaultAvatar(user.uid),
-          bio: "Looking to make new friends ✨",
-          gender: "",
-          age: "",
-          height: "",
-          weight: "",
-          showGender: true,
-          showAge: true,
-          showHeight: false,
-          showWeight: false,
-          moodEmoji: "😎",
-          planTag: "Make Friends",
-          planNote: "Hey! Let's connect, chat, and hang out.",
-          placeName: "",
-          ghostMode: false,
-          online: true,
-          lastSeen: Date.now(),
-          lat: 22.5726 + (Math.random() - 0.5) * 0.04,
-          lng: 88.3639 + (Math.random() - 0.5) * 0.04
-        };
-        await set(userRef, initialProfile);
-        myProfile = initialProfile;
-      } else {
-        myProfile = { ...existing, uid: user.uid };
-        await update(userRef, {
-          uid: user.uid,
-          online: true,
-          lastSeen: Date.now()
-        });
-      }
+      const defaults = {
+        uid: user.uid,
+        name: user.displayName || (user.email ? user.email.split("@")[0] : "New Friend"),
+        email: user.email || "",
+        photoURL: user.photoURL || defaultAvatar(user.uid),
+        bio: "Looking to make new friends ✨",
+        gender: "",
+        age: "",
+        height: "",
+        weight: "",
+        showGender: true,
+        showAge: true,
+        showHeight: false,
+        showWeight: false,
+        moodEmoji: "😎",
+        planTag: "Make Friends",
+        planNote: "Hey! Let's connect, chat, and hang out.",
+        placeName: "",
+        ghostMode: false,
+        lat: 22.5726 + (Math.random() - 0.5) * 0.04,
+        lng: 88.3639 + (Math.random() - 0.5) * 0.04
+      };
+
+      const patch = {
+        uid: user.uid,
+        online: true,
+        lastSeen: Date.now()
+      };
+
+      // শুধু যে ফিল্ডগুলো ডাটাবেসে নেই, কেবল সেগুলোতেই ডিফল্ট ভ্যালু বসবে
+      Object.keys(defaults).forEach((key) => {
+        if (existing[key] === undefined || existing[key] === null) {
+          patch[key] = defaults[key];
+        }
+      });
+
+      await update(userRef, patch);
+      myProfile = { ...existing, ...patch };
+      allUsers[user.uid] = myProfile;
       renderSocialProfileView();
     }
+
 
     function setupRealtimePresence(uid) {
       const connectedRef = ref(db, ".info/connected");
@@ -2454,22 +2495,49 @@
         }
       });
 
-      // Keep presence fresh while active
+      // Keep presence fresh while active (5 min interval — .info/connected + onDisconnect already handles live status)
       clearInterval(presenceHeartbeat);
       presenceHeartbeat = setInterval(() => {
         if (currentUser && !document.hidden) {
           update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { online: true, lastSeen: Date.now() }).catch(() => {});
         }
-      }, 45000);
+      }, 300000);
     }
 
-    // ==================== USERS LISTENER ====================
-    let usersListenerRef = null;
-    function startUsersListener() {
-      if (usersListenerRef) off(usersListenerRef);
-      usersListenerRef = ref(db, `${DB_ROOT}/users`);
+    // ==================== MANUAL USERS FETCH + OWN PROFILE SYNC (BANDWIDTH SAVER) ====================
+    let myProfileListenerRef = null;
+    let activePeerListenerRef = null;
+    let isRefreshingFeed = false;
 
-      onValue(usersListenerRef, (snap) => {
+    function startMyProfileListener(uid) {
+      if (myProfileListenerRef) off(myProfileListenerRef);
+      myProfileListenerRef = ref(db, `${DB_ROOT}/users/${uid}`);
+      onValue(myProfileListenerRef, (snap) => {
+        const val = snap.val();
+        if (!val || typeof val !== "object") return;
+        myProfile = { ...val, uid: val.uid || uid };
+        allUsers[uid] = myProfile;
+        renderSocialProfileView();
+        const golden = myProfile.goldenVerification || {};
+        const goldenLabel = $("menuGoldenStatus");
+        if (goldenLabel) {
+          const cDays = Number(golden.cycleDaysCount ?? golden.monthDays ?? 0);
+          goldenLabel.textContent = golden.verified ? "GOLDEN ✓" : `${Math.min(cDays, 20)}/20 দিন`;
+        }
+        // Only update map pin if map is already open; NEVER auto-refresh Home feed
+        if (map) renderMapMarkers();
+      }, () => {});
+    }
+
+    async function loadAllUsersOnce(showSkeleton = false) {
+      if (isRefreshingFeed) return;
+      isRefreshingFeed = true;
+      if (showSkeleton) {
+        lastRenderedHomeHtml = "";
+        $("homeFeedContainer").innerHTML = renderSkeletonFeed(4);
+      }
+      try {
+        const snap = await get(ref(db, `${DB_ROOT}/users`));
         const raw = snap.val() || {};
         const normalized = {};
         Object.entries(raw).forEach(([key, val]) => {
@@ -2493,29 +2561,120 @@
           }
         }
         updateOnlineCounters();
-        renderHomeFeed();
+        renderHomeFeed(true);
         if (map) renderMapMarkers();
         if (activeChatPeerUid && allUsers[activeChatPeerUid]) {
           updateChatPeerHeader(allUsers[activeChatPeerUid]);
         }
-      }, (err) => {
-        console.error("Users listener error:", err);
+      } catch (err) {
+        console.error("Users fetch error:", err);
         usersLoaded = true;
         usersLoadError = err.message || "Unable to load profiles from database.";
-        renderHomeFeed();
-      });
+        renderHomeFeed(true);
+      } finally {
+        isRefreshingFeed = false;
+      }
     }
 
-    $("refreshFeedBtn").addEventListener("click", () => {
+    $("refreshFeedBtn").addEventListener("click", async () => {
       const icon = $("refreshFeedBtn").querySelector("i");
       icon.classList.add("fa-spin");
-      $("homeFeedContainer").innerHTML = renderSkeletonFeed(4);
-      startUsersListener();
+      await loadAllUsersOnce(true);
       setTimeout(() => {
         icon.classList.remove("fa-spin");
-        renderHomeFeed();
-      }, 650);
+        showToast("হোমস্ক্রিন আপডেট হয়েছে ✅", 1800);
+      }, 250);
     });
+
+    // Pull-to-Refresh Gesture on Home Screen
+    (function setupHomePullToRefresh() {
+      const homeEl = $("homeView");
+      const ptrEl = $("ptrIndicator");
+      const ptrIcon = $("ptrIcon");
+      const ptrText = $("ptrText");
+      if (!homeEl || !ptrEl) return;
+
+      let startY = 0;
+      let startX = 0;
+      let pulling = false;
+      let pullDist = 0;
+      const THRESHOLD = 58;
+
+      homeEl.addEventListener("touchstart", (e) => {
+        if (isRefreshingFeed || homeEl.scrollTop > 2) return;
+        if (e.target.closest(".filter-row")) return;
+        startY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
+        pulling = true;
+        pullDist = 0;
+        ptrEl.classList.add("dragging");
+      }, { passive: true });
+
+      homeEl.addEventListener("touchmove", (e) => {
+        if (!pulling || isRefreshingFeed) return;
+        if (homeEl.scrollTop > 2) {
+          pulling = false;
+          ptrEl.classList.remove("dragging", "ready");
+          ptrEl.style.height = "0px";
+          ptrEl.style.opacity = "0";
+          return;
+        }
+        const dy = e.touches[0].clientY - startY;
+        const dx = e.touches[0].clientX - startX;
+        if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) {
+          if (pullDist > 0) {
+            pullDist = 0;
+            ptrEl.style.height = "0px";
+            ptrEl.style.opacity = "0";
+          }
+          return;
+        }
+        pullDist = Math.min(82, dy * 0.45);
+        ptrEl.style.height = `${pullDist}px`;
+        ptrEl.style.opacity = String(Math.min(1, pullDist / THRESHOLD));
+        if (pullDist >= THRESHOLD) {
+          ptrEl.classList.add("ready");
+          ptrText.textContent = "ছেড়ে দিন রিফ্রেশ করতে";
+        } else {
+          ptrEl.classList.remove("ready");
+          ptrText.textContent = "নিচে টানুন রিফ্রেশ করতে";
+        }
+      }, { passive: true });
+
+      const finishPull = async () => {
+        if (!pulling) return;
+        pulling = false;
+        ptrEl.classList.remove("dragging");
+
+        if (pullDist >= THRESHOLD && !isRefreshingFeed) {
+          ptrEl.classList.remove("ready");
+          ptrEl.style.height = "46px";
+          ptrEl.style.opacity = "1";
+          ptrIcon.className = "fa-solid fa-spinner fa-spin";
+          ptrText.textContent = "রিফ্রেশ হচ্ছে...";
+
+          await loadAllUsersOnce(false);
+          showToast("হোমস্ক্রিন আপডেট হয়েছে ✅", 1800);
+
+          setTimeout(() => {
+            ptrEl.style.height = "0px";
+            ptrEl.style.opacity = "0";
+            setTimeout(() => {
+              ptrIcon.className = "fa-solid fa-arrow-down";
+              ptrText.textContent = "নিচে টানুন রিফ্রেশ করতে";
+            }, 220);
+          }, 220);
+        } else {
+          ptrEl.classList.remove("ready");
+          ptrEl.style.height = "0px";
+          ptrEl.style.opacity = "0";
+        }
+        pullDist = 0;
+      };
+
+      homeEl.addEventListener("touchend", finishPull, { passive: true });
+      homeEl.addEventListener("touchcancel", finishPull, { passive: true });
+    })();
 
     function updateOnlineCounters() {
       const list = Object.values(allUsers);
@@ -2538,10 +2697,13 @@
       return pills;
     }
 
-    function renderHomeFeed() {
+    let lastRenderedHomeHtml = "";
+
+    function renderHomeFeed(force = false) {
       const container = $("homeFeedContainer");
       if (!usersLoaded) {
         container.innerHTML = renderSkeletonFeed(4);
+        lastRenderedHomeHtml = "";
         return;
       }
 
@@ -2553,6 +2715,7 @@
             <div style="font-size:12px;margin-bottom:14px;">${escapeHtml(usersLoadError)}</div>
             <button type="button" class="btn-primary" style="max-width:180px;" onclick="document.getElementById('refreshFeedBtn').click()">Retry Now</button>
           </div>`;
+        lastRenderedHomeHtml = "";
         return;
       }
 
@@ -2568,15 +2731,22 @@
 
       usersList.sort((a, b) => {
         if (Boolean(a.online) !== Boolean(b.online)) return a.online ? -1 : 1;
+        if (a.online && b.online) {
+          return String(a.name || "").localeCompare(String(b.name || ""));
+        }
         return (b.lastSeen || 0) - (a.lastSeen || 0);
       });
 
       if (usersList.length === 0) {
-        container.innerHTML = `
+        const emptyHtml = `
           <div class="empty-state">
             <i class="fa-solid fa-user-group"></i>
             No profiles match this filter yet.<br/>Try switching to <b>All</b> or refreshing.
           </div>`;
+        if (force || emptyHtml !== lastRenderedHomeHtml) {
+          container.innerHTML = emptyHtml;
+          lastRenderedHomeHtml = emptyHtml;
+        }
         return;
       }
 
@@ -2592,6 +2762,9 @@
         html += `<div class="section-label"><span>⚫ Offline (${offlineUsers.length})</span></div>`;
         html += offlineUsers.map((u, idx) => buildProfileCardHtml(u, idx)).join("");
       }
+
+      if (!force && html === lastRenderedHomeHtml) return;
+      lastRenderedHomeHtml = html;
       container.innerHTML = html;
     }
 
@@ -2605,10 +2778,10 @@
 
       const isGolden = isGoldenVerified(u);
       return `
-        <article class="profile-card ${u.online ? "is-online" : ""} ${isGolden ? "is-golden-card" : ""}" style="animation-delay:${Math.min(idx * 45, 250)}ms;">
+        <article class="profile-card ${u.online ? "is-online" : ""} ${isGolden ? "is-golden-card" : ""}">
           <div class="card-top" onclick="window.openUserProfile('${escapeHtml(u.uid)}')">
             <div class="avatar-wrap">
-              <img class="avatar-img lazy-img" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='${defaultAvatar(u.uid)}';this.classList.add('loaded');" src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" alt="${escapeHtml(u.name || "Friend")}" />
+              <img class="avatar-img" loading="lazy" onerror="this.src='${defaultAvatar(u.uid)}';" src="${escapeHtml(u.photoURL || defaultAvatar(u.uid))}" alt="${escapeHtml(u.name || "Friend")}" />
               <span class="mood-badge-mini">${escapeHtml(u.moodEmoji || "😎")}</span>
               <span class="status-dot"></span>
             </div>
@@ -2655,7 +2828,7 @@
       document.querySelectorAll("#planFilterRow .chip").forEach((c) => c.classList.remove("active"));
       chip.classList.add("active");
       activeFilter = chip.dataset.filter;
-      renderHomeFeed();
+      renderHomeFeed(true);
     });
 
     // ==================== 2. 100% FREE MAP ENGINE (NO API KEY + SATELLITE LABELS + SEARCH + PIN) ====================
@@ -2731,7 +2904,14 @@
       if (placeName) patch.placeName = placeName;
 
       await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), patch).catch(() => {});
-      if (map) map.flyTo([lat, lng], 14, { duration: 0.7 });
+      myProfile = { ...(myProfile || { uid: currentUser.uid }), ...patch };
+      allUsers[currentUser.uid] = myProfile;
+      renderSocialProfileView();
+      updateOnlineCounters();
+      if (map) {
+        renderMapMarkers();
+        map.flyTo([lat, lng], 14, { duration: 0.7 });
+      }
       if (showMsg) {
         showToast(placeName ? `Pinned at ${placeName} 📍` : "Your map pin has been updated! 📍");
       }
@@ -2893,9 +3073,14 @@
 
       if (already) {
         await set(impressRef, null);
+        if (allUsers[targetUid]?.impressedBy) delete allUsers[targetUid].impressedBy[currentUser.uid];
         showToast("Impression removed");
       } else {
         await set(impressRef, true);
+        if (allUsers[targetUid]) {
+          allUsers[targetUid].impressedBy = allUsers[targetUid].impressedBy || {};
+          allUsers[targetUid].impressedBy[currentUser.uid] = true;
+        }
         showToast(`You impressed ${u?.name || "them"}! ✨`);
         const senderName = myProfile?.name || "A friend";
         await sendActivityNotification(
@@ -2904,7 +3089,8 @@
           `${senderName} liked your mood & hangout plan. Tap to chat!`
         );
       }
-      if (refreshModal) setTimeout(() => window.openUserProfile(targetUid), 150);
+      renderHomeFeed(true);
+      if (refreshModal) setTimeout(() => window.openUserProfile(targetUid), 120);
     };
 
     window.focusUserOnMap = (uid) => {
@@ -2972,7 +3158,7 @@
           return `
             <div class="chat-row" onclick="window.startDirectChat('${escapeHtml(c.peerUid)}')">
               <div class="avatar-wrap" style="width:48px;height:48px;">
-                <img class="avatar-img lazy-img" loading="lazy" onload="this.classList.add('loaded')" style="width:48px;height:48px;border-color:${isOnline ? "var(--online)" : "var(--offline)"};" src="${escapeHtml(avatar)}" />
+                <img class="avatar-img" loading="lazy" style="width:48px;height:48px;border-color:${isOnline ? "var(--online)" : "var(--offline)"};" src="${escapeHtml(avatar)}" />
                 <span class="status-dot" style="background:${isOnline ? "var(--online)" : "var(--offline)"};"></span>
               </div>
               <div class="chat-row-info">
@@ -3023,6 +3209,20 @@
 
       if (activeChatListenerRef) off(activeChatListenerRef);
       if (activeTypingListenerRef) off(activeTypingListenerRef);
+      if (activePeerListenerRef) off(activePeerListenerRef);
+
+      // Listen ONLY to this specific chat friend while chat is open
+      activePeerListenerRef = ref(db, `${DB_ROOT}/users/${peerUid}`);
+      onValue(activePeerListenerRef, (snap) => {
+        const val = snap.val();
+        if (val && typeof val === "object") {
+          allUsers[peerUid] = { ...val, uid: val.uid || peerUid };
+          if (activeChatPeerUid === peerUid) {
+            const isTypingNow = !$("typingIndicatorBar").classList.contains("hidden");
+            updateChatPeerHeader(allUsers[peerUid], isTypingNow);
+          }
+        }
+      }, () => {});
 
       const chatId = getChatId(currentUser.uid, peerUid);
 
@@ -3226,6 +3426,7 @@
       $("chatOverlay").classList.add("hidden");
       if (activeChatListenerRef) { off(activeChatListenerRef); activeChatListenerRef = null; }
       if (activeTypingListenerRef) { off(activeTypingListenerRef); activeTypingListenerRef = null; }
+      if (activePeerListenerRef) { off(activePeerListenerRef); activePeerListenerRef = null; }
       if (activeAudioEl) { activeAudioEl.pause(); activeAudioEl = null; }
       activeChatPeerUid = null;
     });
@@ -3451,32 +3652,44 @@
     $("toggleViewOnceBtn").addEventListener("click", () => { cropState.viewOnce = !cropState.viewOnce; updateViewOnceBtnUI(); });
     $("closeCropperBtn").addEventListener("click", () => $("photoEditorModal").classList.add("hidden"));
 
-    $("confirmSendPhotoBtn").addEventListener("click", () => {
+        $("confirmSendPhotoBtn").addEventListener("click", async () => {
       const isAvatar = cropState.mode === "avatar";
       setLoading(true, isAvatar ? "Saving profile photo..." : "Sending photo...");
-      cropCanvas.toBlob(async (blob) => {
-        try {
-          const url = await uploadToCloudinary(blob, `${isAvatar ? "avatar" : "photo"}_${Date.now()}.jpg`);
-          if (isAvatar && currentUser) {
-            await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { photoURL: url });
-            $("profAvatarPreview").src = url;
-            showToast("Profile picture updated! ✅");
-          } else {
-            await sendMessage({
-              type: "image",
-              imageUrl: url,
-              text: $("cropCaptionInput").value,
-              viewOnce: cropState.viewOnce
-            });
-          }
-          $("photoEditorModal").classList.add("hidden");
-        } catch {
-          showToast("Upload failed. Please try again.");
-        } finally {
-          setLoading(false);
+      try {
+        const blob = await new Promise((resolve) => cropCanvas.toBlob((b) => resolve(b), "image/jpeg", 0.88));
+        const uploadPayload = blob || cropCanvas.toDataURL("image/jpeg", 0.88);
+        const url = await uploadToCloudinary(uploadPayload, `${isAvatar ? "avatar" : "photo"}_${Date.now()}.jpg`);
+
+        if (isAvatar && currentUser) {
+          await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), {
+            photoURL: url,
+            updatedAt: Date.now()
+          });
+          await updateProfile(currentUser, { photoURL: url }).catch(() => {});
+          if (myProfile) myProfile.photoURL = url;
+          if (allUsers[currentUser.uid]) allUsers[currentUser.uid].photoURL = url;
+          $("profAvatarPreview").src = url;
+          renderSocialProfileView();
+          renderHomeFeed(true);
+          if (map) renderMapMarkers();
+          showToast("Profile picture updated! ✅");
+        } else {
+          await sendMessage({
+            type: "image",
+            imageUrl: url,
+            text: $("cropCaptionInput").value,
+            viewOnce: cropState.viewOnce
+          });
         }
-      }, "image/jpeg", 0.88);
+        $("photoEditorModal").classList.add("hidden");
+      } catch (err) {
+        console.error("Photo upload error:", err);
+        showToast("Upload failed: " + (err?.message || "Please try again."), 4500);
+      } finally {
+        setLoading(false);
+      }
     });
+
 
     // ==================== 4. SOCIAL PROFILE VIEW & CLEAN EDIT MODALS ====================
     function renderSocialProfileView() {
@@ -3585,12 +3798,13 @@
       btn.classList.add("selected");
     });
 
-    $("saveDetailsBtn").addEventListener("click", async () => {
+        $("saveDetailsBtn").addEventListener("click", async () => {
       if (!currentUser) return;
       setLoading(true, "Saving profile...");
       try {
-        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), {
-          name: $("profNameInput").value.trim() || "Friend",
+        const newName = $("profNameInput").value.trim() || "Friend";
+        const patch = {
+          name: newName,
           bio: $("profBioInput").value.trim(),
           gender: $("profGenderInput").value,
           age: $("profAgeInput").value.trim(),
@@ -3599,26 +3813,42 @@
           showGender: $("showGenderToggle").checked,
           showAge: $("showAgeToggle").checked,
           showHeight: $("showHeightToggle").checked,
-          showWeight: $("showWeightToggle").checked
-        });
+          showWeight: $("showWeightToggle").checked,
+          updatedAt: Date.now()
+        };
+        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), patch);
+        await updateProfile(currentUser, { displayName: newName }).catch(() => {});
+        myProfile = { ...(myProfile || {}), ...patch };
+        allUsers[currentUser.uid] = myProfile;
+        renderSocialProfileView();
+        renderHomeFeed(true);
+        if (map) renderMapMarkers();
         $("editDetailsModal").classList.add("hidden");
         showToast("Profile updated! ✨");
-      } catch {
-        showToast("Failed to save changes.");
+      } catch (err) {
+        console.error("Save details error:", err);
+        showToast("Save failed: " + (err?.message || "Check Firebase rules"), 4500);
       } finally {
         setLoading(false);
       }
     });
 
+
     $("saveMoodPlanBtn").addEventListener("click", async () => {
       if (!currentUser) return;
       setLoading(true, "Updating vibe...");
       try {
-        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), {
+        const moodPatch = {
           moodEmoji: selectedMoodEmoji,
           planTag: selectedPlanTag,
           planNote: $("profPlanNoteInput").value.trim()
-        });
+        };
+        await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), moodPatch);
+        myProfile = { ...(myProfile || {}), ...moodPatch };
+        allUsers[currentUser.uid] = myProfile;
+        renderSocialProfileView();
+        renderHomeFeed(true);
+        if (map) renderMapMarkers();
         $("moodPlanModal").classList.add("hidden");
         showToast("Mood & hangout plan updated! 🎉");
       } catch {
@@ -3632,6 +3862,11 @@
       if (!currentUser) return;
       const ghost = e.target.checked;
       await update(ref(db, `${DB_ROOT}/users/${currentUser.uid}`), { ghostMode: ghost }).catch(() => {});
+      myProfile = { ...(myProfile || {}), ghostMode: ghost };
+      allUsers[currentUser.uid] = myProfile;
+      renderSocialProfileView();
+      updateOnlineCounters();
+      if (map) renderMapMarkers();
       showToast(ghost ? "Ghost Mode enabled 👻" : "You are visible on the map 🌍");
     });
 
@@ -4916,26 +5151,26 @@
     };
   }
 
-  async function mfSyncGoldenCycleOnBoot(uid) {
+    async function mfSyncGoldenCycleOnBoot(uid) {
     if (!uid) return;
     const todayKey = mfDateKey();
     let wasRevoked = false;
     try {
-      await runTransaction(ref(db, `${DB_ROOT}/users/${uid}`), (cur) => {
-        if (!cur) return cur;
-        const evalRes = mfEvaluateGoldenState(cur.goldenVerification, todayKey);
-        if (!evalRes.mutated && cur.goldenVerification?.cycleDaysCount === evalRes.next.cycleDaysCount) {
-          return cur;
-        }
-        wasRevoked = evalRes.revokedNow;
-        cur.goldenVerification = evalRes.next;
-        return cur;
-      });
+      const gvRef = ref(db, `${DB_ROOT}/users/${uid}/goldenVerification`);
+      const snap = await get(gvRef);
+      const currentGv = snap.val();
+      const evalRes = mfEvaluateGoldenState(currentGv, todayKey);
+      if (!evalRes.mutated && currentGv?.cycleDaysCount === evalRes.next.cycleDaysCount) {
+        return;
+      }
+      wasRevoked = evalRes.revokedNow;
+      await set(gvRef, evalRes.next);
+
       if (wasRevoked) {
-        mfToast("⚠️ ৩০ দিনে ২০ দিন পূর্ণ না হওয়ায় আপনার গোল্ডেন টিক চলে গেছে এবং প্রথম থেকে কাউন্টডাউন শুরু হয়েছে।", 5500);
+        mfToast("⚠️ ৩০ দিনে ২০ দিন পূর্ণ না হওয়ায় আপনার গোল্ডেন টিক চলে গেছে এবং প্রথম থেকে কাউন্টডাউন শুরু হয়েছে।", 5500);
         await push(ref(db, `${DB_ROOT}/notifications/${uid}`), {
           title: "⚠️ Golden Tick Reset",
-          body: "৩০ দিনে ২০ দিন (প্রতিদিন ১৫ মিনিট) পূর্ণ না হওয়ায় গোল্ডেন টিক রিসেট হয়েছে। প্রথম থেকে আবার শুরু করুন।",
+          body: "৩০ দিনে ২০ দিন (প্রতিদিন ১৫ মিনিট) পূর্ণ না হওয়ায় গোল্ডেন টিক রিসেট হয়েছে। প্রথম থেকে আবার শুরু করুন।",
           avatar: mfUserData?.photoURL || "",
           peerUid: "",
           read: false,
@@ -4946,6 +5181,7 @@
       console.warn("Golden boot sync skipped:", e);
     }
   }
+
 
   async function mfApplyQualifiedDay(uid, dayKey) {
     const userRef = ref(db, `${DB_ROOT}/users/${uid}`);
@@ -4986,7 +5222,7 @@
 
       cur.goldenVerification = g;
       return cur;
-    });
+    }, { applyLocally: false });
 
     if (tx.committed && awardedBonusNow) {
       const msg = newlyVerifiedNow
@@ -5005,14 +5241,17 @@
     return tx;
   }
 
-  async function mfCreditQualifiedReferral(childUid, childData) {
+  async function mfCreditQualifiedReferral(childUid, childData, knownActiveSec = null) {
     if (!childData?.referredBy || childData.referralRewarded) return;
     const todayKey = mfDateKey();
     const claimDay = childData.referralClaimDate || (childData.referralClaimedAt ? mfDateKey(new Date(childData.referralClaimedAt)) : "");
     if (!claimDay || claimDay !== todayKey) return;
 
-    const daySnap = await get(ref(db, `${DB_ROOT}/users/${childUid}/activityDays/${claimDay}`));
-    const activeSec = Number(daySnap.val()?.activeSeconds) || 0;
+    let activeSec = knownActiveSec;
+    if (activeSec == null) {
+      const daySnap = await get(ref(db, `${DB_ROOT}/users/${childUid}/activityDays/${claimDay}`));
+      activeSec = Number(daySnap.val()?.activeSeconds) || 0;
+    }
     // Strictly more than 5 minutes (> 300 seconds) in that single day
     if (activeSec <= MF_REFERRAL_ONLINE_SECONDS) return;
 
@@ -5070,10 +5309,9 @@
         await mfApplyQualifiedDay(uid, dayKey);
       }
 
-      const freshSnap = await get(ref(db, `${DB_ROOT}/users/${uid}`));
-      const freshData = freshSnap.val() || {};
-      mfUserData = freshData;
-      await mfCreditQualifiedReferral(uid, freshData);
+      if (mfUserData?.referredBy && !mfUserData?.referralRewarded && total > MF_REFERRAL_ONLINE_SECONDS) {
+        await mfCreditQualifiedReferral(uid, mfUserData, total);
+      }
       mfRenderLiveOverlays();
     } catch (e) {
       console.warn("Activity sync failed; retaining seconds for retry", e);
@@ -5282,7 +5520,8 @@
         if (hitRefGoal) mfLastRefCrossFlushed = true;
         if (hitGoldenGoal) mfLastGoldenCrossFlushed = true;
 
-        if (hitRefGoal || hitGoldenGoal || mfPendingActiveSeconds >= 15) {
+        // Flush every 60s to save Firebase bandwidth (still flushes immediately at 5m/15m milestones or app exit)
+        if (hitRefGoal || hitGoldenGoal || mfPendingActiveSeconds >= 60) {
           mfFlushActivity(uid);
         }
         mfRenderLiveOverlays();
@@ -5681,9 +5920,10 @@
       return;
     }
 
+    // Bandwidth-optimized GPS sync: write only on first session fix, >= 150m movement, or every 10 minutes
     const movedFromSynced = calcMeters(mfLastSyncedLat, mfLastSyncedLng, lat, lng);
     const isNewUserSession = mfLastSyncedUid !== user.uid;
-    const shouldWriteDb = isNewUserSession || movedFromSynced >= 30 || (now - mfLastSyncTime) >= 60000;
+    const shouldWriteDb = isNewUserSession || movedFromSynced >= 150 || (now - mfLastSyncTime) >= 600000;
     if (!shouldWriteDb) return;
 
     mfLastSyncedLat = lat;
@@ -5691,9 +5931,9 @@
     mfLastSyncedUid = user.uid;
     mfLastSyncTime = now;
 
-    // Reverse geocode only on first fix or after moving >= 150m
+    // Reverse geocode only on first fix or after moving >= 300m
     const movedFromGeo = calcMeters(mfLastGeoLat, mfLastGeoLng, lat, lng);
-    if (!mfCachedPlaceName || movedFromGeo >= 150) {
+    if (!mfCachedPlaceName || movedFromGeo >= 300) {
       mfLastGeoLat = lat;
       mfLastGeoLng = lng;
       const resolved = await mfReverseGeocode(lat, lng);
@@ -5740,7 +5980,7 @@
           setGpsGateUI({ show: true, checking: false, errorMsg: msg });
         }
       },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
     );
   }
 
@@ -5858,14 +6098,23 @@
     };
   }
 
-  // Auto-recheck & refresh whenever user returns from Settings or re-opens the app
+  // Auto-recheck GPS when returning from Settings (throttled when already unlocked)
+  let mfLastResumeGpsCheck = 0;
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-      enforceGpsAndRefresh({ forceCenterMap: true, silentIfUnlocked: true });
+      const now = Date.now();
+      if (!mfGpsUnlocked || (now - mfLastResumeGpsCheck) >= 30000) {
+        mfLastResumeGpsCheck = now;
+        enforceGpsAndRefresh({ forceCenterMap: !mfGpsUnlocked, silentIfUnlocked: true });
+      }
     }
   });
   window.addEventListener("focus", () => {
-    enforceGpsAndRefresh({ forceCenterMap: false, silentIfUnlocked: true });
+    const now = Date.now();
+    if (!mfGpsUnlocked || (now - mfLastResumeGpsCheck) >= 30000) {
+      mfLastResumeGpsCheck = now;
+      enforceGpsAndRefresh({ forceCenterMap: false, silentIfUnlocked: true });
+    }
   });
 
   // Periodic guard: if user turns GPS OFF mid-session, lock immediately
